@@ -29,6 +29,7 @@ builder.Services.AddScoped<IAdminPanelService, AdminPanelService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IStudentsService, StudentsService>();
 builder.Services.AddScoped<ITeachersService, TeachersService>();
+builder.Services.AddScoped<IDocumentsService, DocumentsService>();
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<StudentHubContext>()
     .AddUserValidator<UserValidator>()

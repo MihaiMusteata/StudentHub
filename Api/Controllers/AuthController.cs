@@ -1,8 +1,6 @@
 ﻿using Application.Contract;
 using Application.Interfaces;
-using Domain.User;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace Api.Controllers
 {

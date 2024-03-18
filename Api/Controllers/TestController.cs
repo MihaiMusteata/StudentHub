@@ -60,7 +60,7 @@ public class TestController : ControllerBase
   }
 
   [HttpGet("download")]
-  public IActionResult Download()
+  public IActionResult Download(int id)
   {
     try
     {
