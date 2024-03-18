@@ -20,5 +20,5 @@ public class Student
     public string DegreeType { get; set; }
     public int Year { get; set; }
     public int UniversityId { get; set; }
-    public string Group { get; set; }
+    public int GroupId { get; set; }
 }

@@ -12,4 +12,5 @@ public interface IAdminPanelService
     Task<List<DepartmentDbTable>> GetDepartments();
     Task<List<SpecialtyDbTable>> GetSpecialties();
     Task<List<DisciplineDbTable>> GetDisciplines();
+    Task<List<GroupDbTable>> GetGroups();
 }

@@ -35,6 +35,7 @@ const API_ENDPOINTS: ApiEndpoints = {
     "faculties": () => `/api/Admin/faculties`,
     "specialties": () => `/api/Admin/specialties`,
     "disciplines": () => `/api/Admin/disciplines`,
+    "groups": () => `/api/Admin/groups`,
 
 };
 

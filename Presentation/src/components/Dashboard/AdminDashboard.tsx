@@ -1,9 +1,47 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { Link } from 'react-router-dom';
+import { ApiGetRequest } from '../../scripts/api.tsx';
+
+interface PlatfromUsers {
+  users: number;
+  teachers: number;
+  students: number;
+}
 
 const AdminDashboard: FC = () => {
-  const Card = ({ type, title, value, icon, link, linkName }: {type: string, title: string, value: number, icon: JSX.Element, link: string, linkName: string }) => {
+  const [ users, setUsers ] = useState<PlatfromUsers>({users: 0, teachers: 0, students: 0});
+  const [ isLoading, setIsLoading ] = useState<boolean>(true);
+  const fetchField = async (field: string) => {
+    const result = await ApiGetRequest(field);
+    if (result) {
+      setIsLoading(false);
+    }
+    if (result.status === 200) {
+      return result.body;
+    }
+    return [];
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchUsers = async () => {
+      const users = await fetchField('users');
+      const teachers = await fetchField('teachers');
+      const students = await fetchField('students');
+      setUsers({users: users.length, teachers: teachers.length, students: students.length});
+    };
+    fetchUsers();
+  }, []);
+
+  const Card = ({type, title, value, icon, link, linkName}: {
+    type: string,
+    title: string,
+    value: number | string,
+    icon: JSX.Element,
+    link: string,
+    linkName: string
+  }) => {
     return (
       <>
         <div className='col-md-4 col-sm-12 mb-xl-0 mb-4'>
@@ -33,9 +71,30 @@ const AdminDashboard: FC = () => {
     <>
       <div className='container-fluid py-4'>
         <div className='row'>
-          <Card type='primary' title='Total Users' value={2} icon={<PeopleAltIcon className='text-white' />} link='/users' linkName='View all' />
-          <Card type='success' title='Total Teachers' value={2} icon={<PeopleAltIcon className='text-white' />} link='/teachers' linkName='View all' />
-          <Card type='info' title='Total Students' value={2} icon={<PeopleAltIcon className='text-white' />} link='/students' linkName='View all' />
+          <Card
+            type='primary'
+            title='Total Users'
+            value={isLoading ? 'Loading...' : users.users}
+            icon={<PeopleAltIcon className='text-white' />}
+            link='/users'
+            linkName='View all'
+          />
+          <Card
+            type='success'
+            title='Total Teachers'
+            value={isLoading ? 'Loading...' : users.teachers}
+            icon={<PeopleAltIcon className='text-white' />}
+            link='/teachers'
+            linkName='View all'
+          />
+          <Card
+            type='info'
+            title='Total Students'
+            value={isLoading ? 'Loading...' : users.students}
+            icon={<PeopleAltIcon className='text-white' />}
+            link='/students'
+            linkName='View all'
+          />
         </div>
       </div>
     </>

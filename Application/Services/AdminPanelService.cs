@@ -62,6 +62,12 @@ public class AdminPanelService : IAdminPanelService
         var disciplines = await _context.Disciplines.ToListAsync();
         return disciplines;
     }
+    
+    public async Task<List<GroupDbTable>> GetGroups()
+    {
+        var groups = await _context.Groups.ToListAsync();
+        return groups;
+    }
 
 
 }

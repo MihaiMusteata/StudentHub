@@ -22,7 +22,9 @@ public class StudentDbTable
     [ForeignKey("UniversityId")]
     public int UniversityId { get; set; }
     public virtual UniversityDbTable University { get; set; }
-    public string Group { get; set; }
+    [ForeignKey("GroupId")]
+    public int GroupId { get; set; }
+    public virtual GroupDbTable Group { get; set; }
     public string StudyFrequency { get; set; }
     [ForeignKey("SpecialtyId")]
     public int SpecialtyId { get; set; }

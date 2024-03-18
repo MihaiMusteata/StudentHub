@@ -22,7 +22,9 @@ public class AutoMapping : Profile
             .ForMember(dest => dest.LastName, opt
                 => opt.MapFrom(src => src.User.LastName))
             .ForMember(dest => dest.BirthDate, opt
-                => opt.MapFrom(src => src.User.BirthDate));
+                => opt.MapFrom(src => src.User.BirthDate))
+            .ForMember(dest => dest.GroupId, opt 
+                => opt.MapFrom(src => src.Group.Id));
 
         CreateMap<Student, StudentDbTable>()
             .ForMember(dest => dest.UserId, opt
@@ -41,8 +43,8 @@ public class AutoMapping : Profile
                 => opt.MapFrom(src => src.FacultyId))
             .ForMember(dest => dest.UniversityId, opt
                 => opt.MapFrom(src => src.UniversityId))
-            .ForMember(dest => dest.Group, opt
-                => opt.MapFrom(src => src.Group))
+            .ForMember(dest => dest.GroupId, opt
+                => opt.MapFrom(src => src.GroupId))
             .ForMember(dest => dest.StudyFrequency, opt
                 => opt.MapFrom(src => src.StudyFrequency))
             .ForMember(dest => dest.SpecialtyId, opt
@@ -57,8 +59,6 @@ public class AutoMapping : Profile
         CreateMap<TeacherDbTable, Teacher>()
             .ForMember(dest => dest.UniversityId, opt
                 => opt.MapFrom(src => src.University.Id))
-            .ForMember(dest => dest.DisciplineId, opt
-                => opt.MapFrom(src => src.Discipline.Id))
             .ForMember(dest => dest.FirstName, opt
                 => opt.MapFrom(src => src.User.FirstName))
             .ForMember(dest => dest.LastName, opt
@@ -69,8 +69,6 @@ public class AutoMapping : Profile
         CreateMap<Teacher, TeacherDbTable>()
             .ForMember(dest => dest.UserId, opt
                 => opt.MapFrom(src => src.UserId))
-            .ForMember(dest => dest.DisciplineId, opt
-                => opt.MapFrom(src => src.DisciplineId))
             .ForMember(dest => dest.UniversityId, opt
                 => opt.MapFrom(src => src.UniversityId));
         

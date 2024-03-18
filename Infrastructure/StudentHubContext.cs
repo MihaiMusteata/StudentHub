@@ -22,6 +22,18 @@ public class StudentHubContext : IdentityDbContext<User>
     public DbSet<TeacherDbTable> Teachers { get; set; }
     public DbSet<SpecialtyDbTable> Specialties { get; set; }
     public DbSet<DisciplineDbTable> Disciplines { get; set; }
+    public DbSet<GroupDbTable> Groups { get; set; }
+    public DbSet<CourseDbTable> Courses { get; set; }
+    public DbSet<CourseAccessKeyDbTable> CourseAccessKeys { get; set; }
+    public DbSet<CourseLessonDbTable> CourseLessons { get; set; }
+    public DbSet<LessonAttendanceDbTable> LessonAttendances { get; set; }
+    public DbSet<CourseTeachersDbTable> CourseTeachers { get; set; }
+    public DbSet<DocumentDbTable> Documents { get; set; }
+    public DbSet<SubmissionDbTable> Submissions { get; set; }
+    public DbSet<LessonAssignmentDbTable> LessonAssignments { get; set; }
+    public DbSet<LessonResourceDbTable> LessonResources { get; set; }
+    
+    
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

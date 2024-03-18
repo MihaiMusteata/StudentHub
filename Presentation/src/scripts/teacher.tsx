@@ -5,5 +5,4 @@ export interface Teacher {
     lastName: string;
     birthDate: string;
     universityId: number;
-    disciplineId: number;
 }

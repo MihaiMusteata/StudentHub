@@ -7,17 +7,11 @@ import { ApiGetRequest, ApiPostRequest, ApiPutRequest } from "../../scripts/api"
 import { format } from "date-fns";
 import { User } from "../../scripts/user";
 
-interface UniversityFields {
-    universities: any[];
-    disciplines: any[];
-}
-
-
 const TeacherDetails = () => {
 
     const [teacher, setTeacher] = useState<Teacher | undefined>(undefined);
     const [modalFields, setModalFields] = useState<ModalFields[]>([]);
-    const [universitiesField, setUniversities] = useState<UniversityFields>({ universities: [], disciplines: [] });
+    const [universitiesField, setUniversities] = useState<{ universities: any[] }>({ universities: [] });
     const setToastComponent = useContext(ToastContext);
 
     const navigate = useNavigate();
@@ -102,7 +96,6 @@ const TeacherDetails = () => {
                         firstName: user.firstName,
                         lastName: user.lastName,
                         birthDate: user.birthDate,
-                        disciplineId: 0,
                         universityId: 0,
                     }
                     setTeacher(teacher);
@@ -118,25 +111,15 @@ const TeacherDetails = () => {
         }
     }
 
-    const fetchFields = async () => {
-        try {
-            if (!universitiesField.universities.length) {
-                const [univs, disc] = await Promise.all([
-                    fetchField('universities'),
-                    fetchField('disciplines')
-                ]);
-                setUniversities({ universities: univs, disciplines: disc });
-            }
-        } catch (error) {
-            console.error('Error fetching fields:', error);
-        }
-    };
-
     useEffect(() => {
         fetchTeacher();
     }, []);
 
     useEffect(() => {
+        const fetchFields = async () => {
+            const universities = await fetchField('universities');
+            setUniversities({ universities: universities });
+        };
         fetchFields();
     }, []);
 
@@ -185,16 +168,6 @@ const TeacherDetails = () => {
                 value: teacher?.birthDate,
                 type: 'date',
 
-            },
-            {
-                key: 'disciplineId',
-                editable: true,
-                label: 'Discipline',
-                value: teacher?.disciplineId || undefined,
-                type: 'select',
-                options: universitiesField.disciplines.map(discipline => {
-                    return { value: discipline.id, label: discipline.name };
-                })
             },
             {
                 key: 'universityId',

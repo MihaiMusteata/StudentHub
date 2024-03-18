@@ -30,7 +30,6 @@ public class TeachersService : ITeachersService
         var teachers = await _context.Teachers
             .Include(t => t.User)
             .Include(t => t.University)
-            .Include(t => t.Discipline)
             .ToListAsync();
         var teacherList = _mapper.Map<List<Teacher>>(teachers);
         return teacherList;
@@ -41,7 +40,6 @@ public class TeachersService : ITeachersService
         var teacher = await _context.Teachers
             .Include(t => t.User)
             .Include(t => t.University)
-            .Include(t => t.Discipline)
             .FirstOrDefaultAsync(t => t.Id == id);
         var result = _mapper.Map<Teacher>(teacher);
         return result;
@@ -61,13 +59,11 @@ public class TeachersService : ITeachersService
 
         var user = await _userManager.FindByIdAsync(teacher.UserId);
         var university = await _context.Universities.FindAsync(teacher.UniversityId);
-        var discipline = await _context.Disciplines.FindAsync(teacher.DisciplineId);
 
         var objectsToCheck = new List<(string, object)>
         {
             ("User", user),
-            ("University", university),
-            ("Discipline", discipline)
+            ("University", university)
         };
 
         var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);
@@ -135,14 +131,12 @@ public class TeachersService : ITeachersService
         var oldUser = await _userManager.FindByIdAsync(teacher.UserId);
         var oldTeacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == teacher.Id);
         var university = await _context.Universities.FindAsync(teacher.UniversityId);
-        var discipline = await _context.Disciplines.FindAsync(teacher.DisciplineId);
-
+        
         var objectsToCheck = new List<(string, object)>
         {
             ("User", oldUser),
             ("Teacher", oldTeacher),
-            ("University", university),
-            ("Discipline", discipline)
+            ("University", university)
         };
         
         var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);

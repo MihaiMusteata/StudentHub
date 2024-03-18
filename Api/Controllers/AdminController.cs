@@ -86,6 +86,18 @@ namespace Api.Controllers
 
             return Ok(result);
         }
+        
+        [HttpGet("groups")]
+        public async Task<IActionResult> GetGroups()
+        {
+            var result = await _adminPanelService.GetGroups();
+            if (result.Count == 0)
+            {
+                return NotFound(string.Format(ErrorTemplate.NoItemsFound, "Groups"));
+            }
+
+            return Ok(result);
+        }
 
      
     }

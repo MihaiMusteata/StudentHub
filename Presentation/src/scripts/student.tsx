@@ -16,5 +16,5 @@ export interface Student {
     graduationDate: string;
     degreeType: string;
     year: string;
-    group: string;
+    groupId: number;
 }

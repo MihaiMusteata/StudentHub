@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Student } from '../../scripts/student';
-import { ApiResponse, ApiGetRequest, ApiPutRequest, ApiPostRequest } from '../../scripts/api';
+import { ApiGetRequest, ApiPutRequest, ApiPostRequest } from '../../scripts/api';
 import { useContext, useEffect, useState } from 'react';
 import IdentityCard from '../IdentityCard';
 import { format } from 'date-fns';
@@ -13,6 +13,7 @@ interface UniversityFields {
   faculties: any[];
   departments: any[];
   specialties: any[];
+  groups: any[];
 }
 
 
@@ -20,7 +21,7 @@ const StudentDetails = () => {
   
   const [student, setStudent] = useState<Student | undefined>(undefined);
   const [modalFields, setModalFields] = useState<ModalFields[]>([]);
-  const [universitiesField, setUniversities] = useState<UniversityFields>({ universities: [], faculties: [], departments: [], specialties: [] });
+  const [universitiesField, setUniversities] = useState<UniversityFields>({ universities: [], faculties: [], departments: [], specialties: [], groups: [] });
   const setToastComponent = useContext(ToastContext);
 
   const navigate = useNavigate();
@@ -121,7 +122,7 @@ const StudentDetails = () => {
             graduationDate: "",
             degreeType: "",
             year: "",
-            group: ""
+            groupId: 0
           };
           setStudent(st);
         }
@@ -139,13 +140,14 @@ const StudentDetails = () => {
   const fetchFields = async () => {
     try {
       if (!universitiesField.universities.length) {
-        const [univs, facs, deps, specs] = await Promise.all([
+        const [univs, facs, deps, specs, grps] = await Promise.all([
           fetchField('universities'),
           fetchField('faculties'),
           fetchField('departments'),
-          fetchField('specialties')
+          fetchField('specialties'),
+          fetchField('groups')
         ]);
-        setUniversities({ universities: univs, faculties: facs, departments: deps, specialties: specs });
+        setUniversities({ universities: univs, faculties: facs, departments: deps, specialties: specs, groups: grps });
       }
     } catch (error) {
       console.error('Error fetching fields:', error);
@@ -253,11 +255,14 @@ const StudentDetails = () => {
         })
       },
       {
-        key: "group",
+        key: "groupId",
         editable: true,
         label: "Group",
-        type: "text",
-        value: student?.group || "",
+        type: "select",
+        value: student?.groupId || undefined,
+        options: universitiesField.groups.map(g => {
+          return { value: g.id, label: g.name };
+        })
       },
       {
         key: "enrollmentNumber",
