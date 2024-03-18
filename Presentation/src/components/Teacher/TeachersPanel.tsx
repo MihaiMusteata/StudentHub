@@ -74,7 +74,7 @@ const TeachersPanel = () => {
     };
 
     const handleInfo = (id: string): void => {
-        navigate('/teacher?id=' + id);
+        navigate('/teachers/teacher?id=' + id);
     }
 
     useEffect(() => {

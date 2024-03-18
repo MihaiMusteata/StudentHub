@@ -19,7 +19,7 @@ const AddTeacherModal: FC<AddTeacherModalProps> = ({ isModalOpen, setIsModalOpen
     const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [filtredUsers, setFiltredUsers] = useState<User[]>([]);
     const [modalFields, setModalFields] = useState<ModalFields[]>([]);
-    const [response, setResponse] = useState<ApiResponse | undefined>(undefined)
+    const [response] = useState<ApiResponse | undefined>(undefined)
     const setToastComponent = useContext(ToastContext);
 
     const handleSave = async (data: ModalFields[]) => {
@@ -101,7 +101,7 @@ const AddTeacherModal: FC<AddTeacherModalProps> = ({ isModalOpen, setIsModalOpen
                 selectedUserId &&
                 (
                     console.log('Selected User ID:', selectedUserId),
-                    navigate(`/teacher?userId=${selectedUserId}`)
+                    navigate(`/teachers/teacher?userId=${selectedUserId}`)
                 )
             }
         </>

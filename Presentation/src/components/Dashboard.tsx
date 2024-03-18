@@ -1,5 +1,7 @@
 import { FC } from 'react';
 import ChartComponent, { ChartComponentProps } from './Chart/ChartComponent';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { Link } from 'react-router-dom';
 
 const Dashboard: FC = () => {
   const chartProps: ChartComponentProps = {
@@ -11,90 +13,41 @@ const Dashboard: FC = () => {
     },
   };
 
+  const Card = ({ type, title, value, icon, link, linkName }: {type: string, title: string, value: number, icon: JSX.Element, link: string, linkName: string }) => {
+    return (
+      <>
+        <div className='col-md-4 col-sm-12 mb-xl-0 mb-4'>
+          <div className='card'>
+            <div className='card-header p-3 pt-2'>
+              <div className={`icon icon-lg icon-shape bg-gradient-${type} shadow-${type} text-center border-radius-xl mt-n4 position-absolute d-flex justify-content-center align-items-center`}>
+                {icon}
+              </div>
+              <div className='text-end pt-1'>
+                <p className='text-sm mb-0 text-capitalize'>{title}</p>
+                <h4 className='mb-0'>{value}</h4>
+              </div>
+            </div>
+            <hr className='dark horizontal my-0' />
+            <div className='card-footer p-3'>
+              <p className='mb-0'>
+                <Link className='text-sm' to={link}>{linkName}</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
       <div className='container-fluid py-4'>
         <div className='row'>
-          <div className='col-xl-3 col-sm-6 mb-xl-0 mb-4'>
-            <div className='card'>
-              <div className='card-header p-3 pt-2'>
-                <div className='icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute'>
-                  <i className='material-icons opacity-10'>weekend</i>
-                </div>
-                <div className='text-end pt-1'>
-                  <p className='text-sm mb-0 text-capitalize'>Today's Money</p>
-                  <h4 className='mb-0'>$53k</h4>
-                </div>
-              </div>
-              <hr className='dark horizontal my-0' />
-              <div className='card-footer p-3'>
-                <p className='mb-0'>
-                  <span className='text-success text-sm font-weight-bolder'>+55% </span>
-                  than last week
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className='col-xl-3 col-sm-6 mb-xl-0 mb-4'>
-            <div className='card'>
-              <div className='card-header p-3 pt-2'>
-                <div className='icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute'>
-                  <i className='material-icons opacity-10'>person</i>
-                </div>
-                <div className='text-end pt-1'>
-                  <p className='text-sm mb-0 text-capitalize'>Today's Users</p>
-                  <h4 className='mb-0'>2,300</h4>
-                </div>
-              </div>
-              <hr className='dark horizontal my-0' />
-              <div className='card-footer p-3'>
-                <p className='mb-0'>
-                  <span className='text-success text-sm font-weight-bolder'>+3% </span>
-                  than last month
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className='col-xl-3 col-sm-6 mb-xl-0 mb-4'>
-            <div className='card'>
-              <div className='card-header p-3 pt-2'>
-                <div className='icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute'>
-                  <i className='material-icons opacity-10'>person</i>
-                </div>
-                <div className='text-end pt-1'>
-                  <p className='text-sm mb-0 text-capitalize'>New Clients</p>
-                  <h4 className='mb-0'>3,462</h4>
-                </div>
-              </div>
-              <hr className='dark horizontal my-0' />
-              <div className='card-footer p-3'>
-                <p className='mb-0'>
-                  <span className='text-danger text-sm font-weight-bolder'>-2%</span>
-                  than yesterday
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className='col-xl-3 col-sm-6'>
-            <div className='card'>
-              <div className='card-header p-3 pt-2'>
-                <div className='icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute'>
-                  <i className='material-icons opacity-10'>weekend</i>
-                </div>
-                <div className='text-end pt-1'>
-                  <p className='text-sm mb-0 text-capitalize'>Sales</p>
-                  <h4 className='mb-0'>$103,430</h4>
-                </div>
-              </div>
-              <hr className='dark horizontal my-0' />
-              <div className='card-footer p-3'>
-                <p className='mb-0'>
-                  <span className='text-success text-sm font-weight-bolder'>+5% </span>
-                  than yesterday
-                </p>
-              </div>
-            </div>
-          </div>
+
+          <Card type='primary' title='Total Users' value={2} icon={<PeopleAltIcon className='text-white' />} link='/users' linkName='View all' />
+          <Card type='success' title='Total Teachers' value={2} icon={<PeopleAltIcon className='text-white' />} link='/teachers' linkName='View all' />
+          <Card type='info' title='Total Students' value={2} icon={<PeopleAltIcon className='text-white' />} link='/students' linkName='View all' />
+
         </div>
         <div className='row mt-4'>
           <div className='col-lg-4 col-md-6 mt-4 mb-4'>
@@ -102,7 +55,7 @@ const Dashboard: FC = () => {
               <div className='card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent'>
                 <div className='bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1'>
                   <div className='chart'>
-                    <div style={{height:'180px'}}>
+                    <div style={{height: '180px'}}>
                       <ChartComponent {...chartProps} />
                     </div>
                   </div>

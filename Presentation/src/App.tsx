@@ -5,7 +5,6 @@ import Signup from './components/Signup';
 import Login from './components/Login';
 import Layout from './components/Layouts/Layout';
 import UsersPanel from './components/User/UsersPanel';
-import Dashboard from './components/Dashboard';
 import { User } from './scripts/user';
 import StudentsPanel from './components/Student/StudentsPanel';
 import StudentDetails from './components/Student/StudentDetails';
@@ -15,6 +14,7 @@ import Test from './components/Test';
 import 'react-toastify/dist/ReactToastify.css';
 import TeachersPanel from './components/Teacher/TeachersPanel';
 import TeacherDetails from './components/Teacher/TeacherDetails';
+import AdminDashboard from './components/Dashboard/AdminDashboard.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -99,14 +99,14 @@ function App() {
                 element={
                   <Layout user={user} setUser={setUser}>
                     <Routes>
-                      <Route path="/dashboard" element={<Dashboard />} />
                       {user.role === 'Admin' && (
                         <>
+                          <Route path="/dashboard" element={<AdminDashboard />} />
                           <Route path="/users" element={<UsersPanel />} />
                           <Route path="/students" element={<StudentsPanel />} />
-                          <Route path="/student" element={<StudentDetails />} />
+                          <Route path="/students/student" element={<StudentDetails />} />
                           <Route path="/teachers" element={<TeachersPanel />} />
-                          <Route path="/teacher" element={<TeacherDetails />} />
+                          <Route path="/teachers/teacher" element={<TeacherDetails />} />
                         </>
                       )}
                       <Route path="*" element={<Navigate to="/dashboard" />} />

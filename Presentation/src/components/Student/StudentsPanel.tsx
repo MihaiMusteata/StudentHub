@@ -73,7 +73,7 @@ const StudentsPanel: FC = () => {
   };
 
   const handleInfo = (id: string): void => {
-    navigate('/student?id=' + id);
+    navigate('/students/student?id=' + id);
   }
 
   useEffect(() => {

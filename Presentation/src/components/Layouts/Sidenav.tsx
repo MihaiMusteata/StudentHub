@@ -6,17 +6,20 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { ListItemIcon } from '@mui/material';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { User } from '../../scripts/user';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 interface SidenavProps {
     user: User;
     setUser: (user: User) => void;
 }
 const Sidenav: FC<SidenavProps> = ({ user }) => {
+    const location = useLocation();
     const navItem = (icon: JSX.Element, text: string, link: string) => {
         return (
             <li className="nav-item">
-                <Link to={link} className="nav-link text-white">
+                <Link to={link} className={`nav-link text-white ${location.pathname.includes(link) ? 'active' +
+                  ' bg-gradient-primary': ''}`}>
                     <div className="text-white text-center me-2 d-flex align-items-center justify-content-center">
                         <ListItemIcon style={{ color: 'white' }} >
                             {icon}
@@ -32,6 +35,7 @@ const Sidenav: FC<SidenavProps> = ({ user }) => {
             case "Admin":
                 return (
                     <>
+                        {navItem(<DashboardIcon />, "Dashboard", "/dashboard")}
                         {navItem(<PeopleAltIcon />, "Users", "/users")}
                         {navItem(<PeopleAltIcon />, "Students", "/students")}
                         {navItem(<PeopleAltIcon />, "Teachers", "/teachers")}
