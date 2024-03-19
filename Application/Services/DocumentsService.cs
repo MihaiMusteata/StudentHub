@@ -29,7 +29,7 @@ public class DocumentsService : IDocumentsService
       return IdentityResult.Failed(new IdentityError
       {
         Code = "DocumentExists",
-        Description = "Document with this name already exists"
+        Description = JsonSerializer.Serialize(errorDict)
       });
     }
 

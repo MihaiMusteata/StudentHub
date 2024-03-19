@@ -30,7 +30,7 @@ public class CourseService : ICourseService
       return IdentityResult.Failed(new IdentityError
       {
         Code = "CourseExists",
-        Description = "Course with this name already exists"
+        Description = JsonSerializer.Serialize(errorDict)
       });
     }
 
@@ -40,7 +40,7 @@ public class CourseService : ICourseService
     {
       ("Discipline", discipline)
     });
-    
+
     if (!checkResult.Succeeded)
     {
       return checkResult;
@@ -70,5 +70,73 @@ public class CourseService : ICourseService
       });
     }
   }
+
+  public async Task<List<CourseData>> GetTeacherCourses(int teacherId)
+  {
+    var courses = await _context.CourseTeachers
+      .Where(ct => ct.TeacherId == teacherId)
+      .Select(ct => new CourseData
+      {
+        Id = ct.Course.Id,
+        DisciplineId = ct.Course.DisciplineId,
+        Name = ct.Course.Name,
+        Description = ct.Course.Description,
+        Code = ct.Course.Code
+      })
+      .ToListAsync();
+    return courses;
+  }
+
+  public async Task<IdentityResult> AssignTeacherToCourse(int courseId, int teacherId)
+  {
+    var errorDict = new Dictionary<string, string>();
+    var course = await _context.Courses.FindAsync(courseId);
+    var teacher = await _context.Teachers.FindAsync(teacherId);
+
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object)>
+    {
+      ("Course", course),
+      ("Teacher", teacher)
+    });
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+
+    var teacherAlreadyAssigned = await _context.CourseTeachers
+      .AnyAsync(ct => ct.CourseId == courseId && ct.TeacherId == teacherId);
+    errorDict["general"] = "Teacher already assigned to this course";
+    
+    if (teacherAlreadyAssigned)
+    {
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "TeacherAlreadyAssigned",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+
+    var newCourseTeacher = new CourseTeachersDbTable()
+    {
+      CourseId = courseId,
+      TeacherId = teacherId
+    };
+    try
+    {
+      await _context.CourseTeachers.AddAsync(newCourseTeacher);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (Exception e)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "adding a teacher to a course");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+
 
 }

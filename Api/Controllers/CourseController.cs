@@ -32,5 +32,31 @@ public class CourseController : ControllerBase
     
     return BadRequest(errors);
   }
+  
+  [HttpGet("teacher-courses")]
+  public async Task<IActionResult> GetTeacherCourses(int id)
+  {
+    var courses = await _courseService.GetTeacherCourses(id);
+    return Ok(courses);
+  }
+  
+  [HttpPost("assign-teacher-to-course")]
+  public async Task<IActionResult> AssignTeacherToCourse(int courseId, int teacherId)
+  {
+    var result = await _courseService.AssignTeacherToCourse(courseId, teacherId);
+    if (result.Succeeded)
+    {
+      return Ok("Teacher Assigned");
+    }
+    
+    var errors = new List<string>();
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+    
+    return BadRequest(errors);
+  }
+  
 
 }
