@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Application.Contract;
 using Application.Interfaces;
+using Application.Resources;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -27,7 +29,7 @@ public class DocumentsController : ControllerBase
       documentData.Extension = Path.GetExtension(file.FileName);
       documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
     }
-    
+
     var result = await _documentsService.CreateDocument(documentData);
     if (result.Succeeded)
     {
@@ -42,4 +44,33 @@ public class DocumentsController : ControllerBase
     return BadRequest(errors);
   }
 
+  [HttpGet("download")]
+  public async Task<IActionResult> DownloadDocument(int id)
+  {
+    var result = await _documentsService.GetDocument(id);
+    if (result is null)
+    {
+      var errorDict = new Dictionary<string, string>();
+      errorDict["general"] = string.Format(ErrorTemplate.ItemNotFound, "Document");
+      return NotFound(new List<string>
+      {
+        JsonSerializer.Serialize(errorDict)
+      });
+    }
+
+    var fileBytes = Convert.FromBase64String(result.Content);
+    return File(fileBytes, "application/octet-stream", result.Name + result.Extension);
+  }
+
+  [HttpGet("documents")]
+  public async Task<IActionResult> GetDocuments()
+  {
+    var result = await _documentsService.GetDocuments();
+    if (result.Count == 0)
+    {
+      return NotFound(string.Format(ErrorTemplate.NoItemsFound, "Documents"));
+    }
+
+    return Ok(result);
+  }
 }
