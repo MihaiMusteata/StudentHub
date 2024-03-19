@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services;
 
-public class DocumentsService: IDocumentsService
+public class DocumentsService : IDocumentsService
 {
   private readonly StudentHubContext _context;
-  
+
   public DocumentsService(StudentHubContext context)
   {
     _context = context;
@@ -21,15 +21,19 @@ public class DocumentsService: IDocumentsService
   public async Task<IdentityResult> CreateDocument(DocumentData documentData)
   {
     var errorDict = new Dictionary<string, string>();
-    
+
     var documentExists = await _context.Documents.AnyAsync(d => d.Name == documentData.Name);
     if (documentExists)
     {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists,"Document with this name");
-      return IdentityResult.Failed(new IdentityError { Code = "404", Description = "Document with this name already exists" });
+      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document with this name");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DocumentExists",
+        Description = "Document with this name already exists"
+      });
     }
-    
-    var newDocument = new DocumentDbTable() 
+
+    var newDocument = new DocumentDbTable()
     {
       Id = documentData.Id,
       Name = documentData.Name,
@@ -52,7 +56,7 @@ public class DocumentsService: IDocumentsService
       });
     }
   }
-  
+
   public async Task<DocumentData?> GetDocument(int id)
   {
     var document = await _context.Documents.FindAsync(id);
@@ -60,7 +64,7 @@ public class DocumentsService: IDocumentsService
     {
       return null;
     }
-    
+
     return new DocumentData
     {
       Id = document.Id,
@@ -69,7 +73,7 @@ public class DocumentsService: IDocumentsService
       Content = document.Content
     };
   }
-  
+
   public async Task<List<DocumentData>> GetDocuments()
   {
     var documents = await _context.Documents.ToListAsync();
