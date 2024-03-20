@@ -72,7 +72,7 @@ const TeacherDetails = () => {
     const fetchTeacher = async () => {
         try {
             if (id) {
-                const result = await ApiGetRequest('teacher', { teacherId: id });
+                const result = await ApiGetRequest('teacherById', { id: id });
                 console.log('Result:', result);
                 if (result.status === 200) {
                     const teacher = result.body as Teacher;

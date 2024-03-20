@@ -6,7 +6,7 @@ namespace Application.Helpers;
 
 public class ErrorChecker
 {
-    public static IdentityResult CheckNullObjects(IEnumerable<(string, object)> objectsToCheck)
+    public static IdentityResult CheckNullObjects(IEnumerable<(string, object?)> objectsToCheck)
     {
         var errorDict = new Dictionary<string, string>();
 

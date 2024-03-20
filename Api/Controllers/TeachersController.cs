@@ -31,10 +31,24 @@ public class TeachersController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("teacher")]
-    public async Task<IActionResult> GetTeacher(int id)
+    [HttpGet("teacher/id/{id}")]
+    public async Task<IActionResult> GetTeacherById(int id)
     {
-        var result = await _teachersService.GetTeacher(id);
+        var result = await _teachersService.GetTeacherById(id);
+        if (result is null)
+        {
+            var errorDict = new Dictionary<string, string>();
+            errorDict["general"] = string.Format(ErrorTemplate.ItemNotFound, "Teacher");
+            return NotFound(new List<string> { JsonSerializer.Serialize(errorDict) });
+        }
+
+        return Ok(result);
+    }
+    
+    [HttpGet("teacher/user-id/{userId}")]
+    public async Task<IActionResult> GetTeacherByUserId(string userId)
+    {
+        var result = await _teachersService.GetTeacherByUserId(userId);
         if (result is null)
         {
             var errorDict = new Dictionary<string, string>();

@@ -25,7 +25,8 @@ const API_ENDPOINTS: ApiEndpoints = {
 
     // Teachers
     "teachers": () => `/api/Teachers/teachers`,
-    "teacher": (params?: any) => `/api/Teachers/teacher?id=${params?.teacherId}`,
+    "teacherById": (params?: any) => `/api/Teachers/teacher/id/${params?.id}`,
+    "teacherByUserId": (params?: any) => `/api/Teachers/teacher/user-id/${params?.userId}`,
     "deleteTeacher": (params?: any) => `/api/Teachers/teacher?id=${params?.teacherId}`,
     "updateTeacher": () => `/api/Teachers/teacher`,
     "addTeacher": () => `/api/Teachers/teacher`,
@@ -36,7 +37,11 @@ const API_ENDPOINTS: ApiEndpoints = {
     "specialties": () => `/api/Admin/specialties`,
     "disciplines": () => `/api/Admin/disciplines`,
     "groups": () => `/api/Admin/groups`,
-
+    
+    // Course
+    "teacherCourses": (params?: any) => `/api/Course/teacher-courses?teacherId=${params?.teacherId}`,
+    "enrolledGroups": (params?: any) => `/api/Course/enrolled-groups?courseId=${params?.courseId}`,
+    
 };
 
 export interface ApiResponse {
@@ -47,6 +52,7 @@ export interface ApiResponse {
 const apiRequest = async (method: Method, endpoint: string, params?: any, data?: any): Promise<ApiResponse> => {
     try {
         const url = API_ENDPOINTS[endpoint](params);
+        console.log("URL:", url);
 
         const options: { method: Method; url: string; withCredentials: boolean; data?: any } = {
             method: method,

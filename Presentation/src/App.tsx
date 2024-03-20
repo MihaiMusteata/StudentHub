@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect, createContext, Dispatch } from 'react';
+import React, { useState, useEffect, createContext, Dispatch } from 'react';
 import { ApiGetRequest, ApiResponse } from './scripts/api';
 import Signup from './components/Signup';
 import Login from './components/Login';
@@ -15,6 +15,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import TeachersPanel from './components/Teacher/TeachersPanel';
 import TeacherDetails from './components/Teacher/TeacherDetails';
 import AdminDashboard from './components/Dashboard/AdminDashboard.tsx';
+import TeacherDashboard from './components/Dashboard/TeacherDashboard.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -80,6 +81,7 @@ function App() {
       }
     };
     fetchProfile();
+    console.log('Profile:', user);
   }, [ updateUser, response.status ]);
 
   if (isLoading) {
@@ -107,6 +109,11 @@ function App() {
                           <Route path="/students/student" element={<StudentDetails />} />
                           <Route path="/teachers" element={<TeachersPanel />} />
                           <Route path="/teachers/teacher" element={<TeacherDetails />} />
+                        </>
+                      )}
+                      {user.role === 'Teacher' && (
+                        <>
+                          <Route path="/dashboard" element={<TeacherDashboard userId={user.id} />} />
                         </>
                       )}
                       <Route path="*" element={<Navigate to="/dashboard" />} />

@@ -35,12 +35,22 @@ public class TeachersService : ITeachersService
     return teacherList;
   }
 
-  public async Task<Teacher?> GetTeacher(int id)
+  public async Task<Teacher?> GetTeacherById(int id)
   {
     var teacher = await _context.Teachers
       .Include(t => t.User)
       .Include(t => t.University)
       .FirstOrDefaultAsync(t => t.Id == id);
+    var result = _mapper.Map<Teacher>(teacher);
+    return result;
+  }
+  
+  public async Task<Teacher?> GetTeacherByUserId(string userId)
+  {
+    var teacher = await _context.Teachers
+      .Include(t => t.User)
+      .Include(t => t.University)
+      .FirstOrDefaultAsync(t => t.UserId == userId);
     var result = _mapper.Map<Teacher>(teacher);
     return result;
   }

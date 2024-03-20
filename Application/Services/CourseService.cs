@@ -71,22 +71,6 @@ public class CourseService : ICourseService
     }
   }
 
-  public async Task<List<CourseData>> GetTeacherCourses(int teacherId)
-  {
-    var courses = await _context.CourseTeachers
-      .Where(ct => ct.TeacherId == teacherId)
-      .Select(ct => new CourseData
-      {
-        Id = ct.Course.Id,
-        DisciplineId = ct.Course.DisciplineId,
-        Name = ct.Course.Name,
-        Description = ct.Course.Description,
-        Code = ct.Course.Code
-      })
-      .ToListAsync();
-    return courses;
-  }
-
   public async Task<IdentityResult> AssignTeacherToCourse(int courseId, int teacherId)
   {
     var errorDict = new Dictionary<string, string>();
@@ -106,7 +90,7 @@ public class CourseService : ICourseService
     var teacherAlreadyAssigned = await _context.CourseTeachers
       .AnyAsync(ct => ct.CourseId == courseId && ct.TeacherId == teacherId);
     errorDict["general"] = "Teacher already assigned to this course";
-    
+
     if (teacherAlreadyAssigned)
     {
       return IdentityResult.Failed(new IdentityError
@@ -136,6 +120,68 @@ public class CourseService : ICourseService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
+  }
+
+  public async Task<List<string>> GetEnrolledGroups(int courseId)
+  {
+    var groups = await _context.CourseAccessKeys
+      .Where(cak => cak.CourseId == courseId)
+      .Select(cak => cak.Group.Name)
+      .Distinct()
+      .ToListAsync();
+
+    return groups;
+  }
+
+  public async Task<CourseInformation?> GetCourse(int courseId)
+  {
+    var course = await _context.Courses
+      .Include(c => c.Discipline)
+      .FirstOrDefaultAsync(c => c.Id == courseId);
+    
+    var groups = await GetEnrolledGroups(courseId);
+
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Course", course)
+    });
+
+    if (!checkResult.Succeeded)
+    {
+      return null;
+    }
+
+    var courseInformation = new CourseInformation
+    {
+      Id = course!.Id,
+      Code = course.Code,
+      Name = course.Name,
+      Description = course.Description,
+      Discipline = course.Discipline.Name,
+      EnrolledGroups = groups
+    };
+
+    return courseInformation;
+  }
+
+  public async Task<List<CourseInformation>> GetTeacherCourses(int teacherId)
+  {
+    var courses = await _context.CourseTeachers
+      .Where(ct => ct.TeacherId == teacherId)
+      .ToListAsync();
+
+    var coursesList = new List<CourseInformation>();
+
+    foreach (var course in courses)
+    {
+      var courseInformation = await GetCourse(course.CourseId);
+      if (courseInformation is not null)
+      {
+        coursesList.Add(courseInformation);
+      }
+    }
+
+    return coursesList;
   }
 
 
