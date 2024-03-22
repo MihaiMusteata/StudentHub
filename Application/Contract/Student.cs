@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Application.Contract;
 public class Student
 {

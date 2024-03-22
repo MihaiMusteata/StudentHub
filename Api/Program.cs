@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using Application.Contract;
 using Application.Identity;
 using Application.Interfaces;
 using Application.Services;
@@ -31,6 +30,7 @@ builder.Services.AddScoped<IStudentsService, StudentsService>();
 builder.Services.AddScoped<ITeachersService, TeachersService>();
 builder.Services.AddScoped<IDocumentsService, DocumentsService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<StudentHubContext>()
     .AddUserValidator<UserValidator>()

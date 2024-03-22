@@ -33,7 +33,7 @@ public class DocumentsController : ControllerBase
     var result = await _documentsService.CreateDocument(documentData);
     if (result.Succeeded)
     {
-      return Ok();
+      return Ok("Document uploaded successfully");
     }
 
     foreach (var error in result.Errors)

@@ -1,11 +1,6 @@
-using System.Text.Json;
-using Application.Contract;
-using Application.Helpers;
 using Application.Interfaces;
-using Application.Resources;
 using AutoMapper;
 using Domain.UniversityTables;
-using Domain.User;
 using Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

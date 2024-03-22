@@ -1,5 +1,4 @@
 using Application.Contract;
-using Domain.User;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Interfaces;

@@ -36,7 +36,7 @@ public class CourseService : ICourseService
 
     var discipline = await _context.Disciplines.FindAsync(courseData.DisciplineId);
 
-    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object)>
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
     {
       ("Discipline", discipline)
     });
@@ -182,6 +182,22 @@ public class CourseService : ICourseService
     }
 
     return coursesList;
+  }
+  
+  public async Task<List<LessonData>> GetCourseLessons(int courseId)
+  {
+    var lessons = await _context.CourseLessons
+      .Where(l => l.CourseId == courseId)
+      .Select(l => new LessonData
+      {
+        Id = l.Id,
+        Name = l.Name,
+        Description = l.Description,
+        CourseId = l.CourseId
+      })
+      .ToListAsync();
+
+    return lessons;
   }
 
 

@@ -1,6 +1,5 @@
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Text.Json;
 using Api.Models;
 using Application.Contract;

@@ -5,6 +5,7 @@ interface ApiEndpoints {
 }
 
 const API_ENDPOINTS: ApiEndpoints = {
+    // Authentification
     "login": () => `/api/Auth/login`,
     "signup": () => `/api/Auth/signup`,
     "profile": () => `/api/Profile/profile`,
@@ -31,6 +32,7 @@ const API_ENDPOINTS: ApiEndpoints = {
     "updateTeacher": () => `/api/Teachers/teacher`,
     "addTeacher": () => `/api/Teachers/teacher`,
 
+    // Admin
     "universities": () => `/api/Admin/universities`,
     "departments": () => `/api/Admin/departments`,
     "faculties": () => `/api/Admin/faculties`,
@@ -41,6 +43,15 @@ const API_ENDPOINTS: ApiEndpoints = {
     // Course
     "teacherCourses": (params?: any) => `/api/Course/teacher-courses?teacherId=${params?.teacherId}`,
     "enrolledGroups": (params?: any) => `/api/Course/enrolled-groups?courseId=${params?.courseId}`,
+    "courseLessons": (params?: any) => `/api/Course/course-lessons?courseId=${params?.courseId}`,
+    "course": (params?: any) => `/api/Course/course?id=${params?.id}`,
+    
+    // Lesson
+    "lessonDocuments": (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,
+    "uploadLessonDocument": (params?: any) => `/api/Lesson/upload-document/${params?.lessonId}`,
+    
+    // Document
+    "uploadDocument": () => `/api/Documents/upload`,
     
 };
 

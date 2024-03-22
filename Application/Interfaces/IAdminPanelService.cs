@@ -1,7 +1,4 @@
-using Application.Contract;
 using Domain.UniversityTables;
-using Domain.User;
-using Microsoft.AspNetCore.Identity;
 
 namespace Application.Interfaces;
 

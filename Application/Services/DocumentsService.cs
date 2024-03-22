@@ -74,21 +74,13 @@ public class DocumentsService : IDocumentsService
     };
   }
 
-  public async Task<List<DocumentData>> GetDocuments()
+  public async Task<List<DocumentMinimal>> GetDocuments()
   {
-    var documents = await _context.Documents.ToListAsync();
-    var documentDataList = new List<DocumentData>();
-    foreach (var document in documents)
-    {
-      documentDataList.Add(new DocumentData
-      {
-        Id = document.Id,
-        Name = document.Name,
-        Extension = document.Extension,
-        Content = document.Content
-      });
-    }
-    return documentDataList;
+    var documents = await _context.Documents
+      .Select(doc => new DocumentMinimal { Id = doc.Id, Name = doc.Name })
+      .ToListAsync();
+
+    return documents;
   }
 
 }

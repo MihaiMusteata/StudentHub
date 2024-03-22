@@ -8,6 +8,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { User } from '../../scripts/user';
 import { Link, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import CastForEducationIcon from '@mui/icons-material/CastForEducation';
 
 interface SidenavProps {
   user: User;
@@ -46,6 +47,7 @@ const Sidenav: FC<SidenavProps> = ({user}) => {
       case 'Teacher':
         return (
           <>
+            {navItem(<CastForEducationIcon />, 'Courses', '/courses')}
           </>
         );
       case 'Student':

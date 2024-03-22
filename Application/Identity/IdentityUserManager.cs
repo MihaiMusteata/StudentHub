@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Domain.User;
 using Infrastructure;
 using Microsoft.AspNetCore.Identity;

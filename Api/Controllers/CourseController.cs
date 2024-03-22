@@ -77,9 +77,9 @@ public class CourseController : ControllerBase
   }
 
   [HttpGet("course")]
-  public async Task<IActionResult> GetCourse(int courseId)
+  public async Task<IActionResult> GetCourse(int id)
   {
-    var course = await _courseService.GetCourse(courseId);
+    var course = await _courseService.GetCourse(id);
     if (course is null)
     {
       var errorDict = new Dictionary<string, string>();
@@ -92,6 +92,15 @@ public class CourseController : ControllerBase
 
     return Ok(course);
   }
+  
+  [HttpGet("course-lessons")]
+  public async Task<IActionResult> GetCourseLessons(int courseId)
+  {
+    var lessons = await _courseService.GetCourseLessons(courseId);
+    return Ok(lessons);
+  }
+
+
 
 
 }

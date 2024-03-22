@@ -1,9 +1,5 @@
-using System.Text.Json;
-using Api.Models;
-using Application.Contract;
 using Application.Interfaces;
 using Application.Resources;
-using Domain.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers

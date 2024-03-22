@@ -7,5 +7,5 @@ public interface IDocumentsService
 {
   Task<IdentityResult> CreateDocument(DocumentData documentData);
   Task<DocumentData?> GetDocument(int id);
-  Task<List<DocumentData>> GetDocuments();
+  Task<List<DocumentMinimal>> GetDocuments();
 }

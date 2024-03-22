@@ -10,4 +10,5 @@ public interface ICourseService
   Task<List<string>> GetEnrolledGroups(int courseId);
   Task<List<CourseInformation>> GetTeacherCourses(int teacherId);
   Task<CourseInformation?> GetCourse(int courseId);
+  Task<List<LessonData>> GetCourseLessons(int courseId);
 }

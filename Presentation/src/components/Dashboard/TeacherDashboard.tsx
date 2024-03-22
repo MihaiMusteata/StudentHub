@@ -1,17 +1,11 @@
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useEffect, useState } from 'react';
 import { ApiGetRequest } from '../../scripts/api.tsx';
+import { Course } from '../Course/CoursePage.tsx';
+import { Link } from 'react-router-dom';
 
-interface Course {
-  id: number,
-  discipline: string
-  name: string,
-  description: string,
-  code: string,
-  enrolledGroups: string,
-}
+const listItem = ({id, code, name, description, enrolledGroups, discipline}: Course) => {
 
-const listItem = ({code, name, description, enrolledGroups, discipline}: Course) => {
   return (
     <>
       <div className='d-flex flex-column'>
@@ -21,10 +15,12 @@ const listItem = ({code, name, description, enrolledGroups, discipline}: Course)
         <span className='text-xs'>Discipline: <span className='text-dark ms-sm-2 font-weight-bold'>{discipline}</span></span>
       </div>
       <div className='ms-auto text-end d-flex flex-column justify-content-center'>
-        <a className='btn btn-link text-danger text-gradient px-3 mb-0' href='/action'>
-          <VisibilityIcon className='fs-5 me-1' />
-          <span>View</span>
-        </a>
+        <Link to={`/courses/course-page?id=${id}`}>
+          <a className='btn btn-link text-danger text-gradient px-3 mb-0'>
+            <VisibilityIcon className='fs-5 me-1' />
+            <span>View</span>
+          </a>
+        </Link>
       </div>
     </>
   );
@@ -63,14 +59,12 @@ const TeacherDashboard = ({userId}: { userId: string }) => {
     }
   };
 
-
   useEffect(() => {
     fetchTeacher();
-  }, [userId]);
+  }, [ userId ]);
 
   useEffect(() => {
-    if(teacher.id)
-    {
+    if (teacher.id) {
       fetchCourses();
     }
   }, [ teacher.id ]);
