@@ -192,7 +192,6 @@ public class CourseService : ICourseService
       {
         Id = l.Id,
         Name = l.Name,
-        Description = l.Description,
         CourseId = l.CourseId
       })
       .ToListAsync();

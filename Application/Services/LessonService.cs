@@ -23,10 +23,10 @@ public class LessonService : ILessonService
   {
     var errorDict = new Dictionary<string, string>();
 
-    var lessonExists = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name);
+    var lessonExists = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId);
     if (lessonExists)
     {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Lesson with this name");
+      errorDict["name"] = string.Format(ErrorTemplate.ItemExists, "Lesson with this name");
       return IdentityResult.Failed(new IdentityError
       {
         Code = "LessonExists",
@@ -50,7 +50,6 @@ public class LessonService : ILessonService
     {
       Id = lessonData.Id,
       Name = lessonData.Name,
-      Description = lessonData.Description,
       CourseId = lessonData.CourseId,
     };
 
@@ -71,6 +70,82 @@ public class LessonService : ILessonService
     }
   }
 
+  public async Task<IdentityResult> DeleteLesson(int id)
+  {
+    var errorDict = new Dictionary<string, string>();
+
+    var lesson = await _context.CourseLessons.FindAsync(id);
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Lesson", lesson)
+    });
+
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+
+    try
+    {
+      _context.CourseLessons.Remove(lesson!);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (Exception)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "deleting a lesson");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+
+  public async Task<IdentityResult> UpdateLesson(LessonData lessonData)
+  {
+    var errorDict = new Dictionary<string, string>();
+
+    var oldLesson = await _context.CourseLessons.FindAsync(lessonData.Id);
+
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Lesson", oldLesson)
+    });
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+    
+    var lesson = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId);
+    if (lesson )
+    {
+      errorDict["name"] = string.Format(ErrorTemplate.ItemExists, "Lesson with this name");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "LessonExists",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+    
+    oldLesson!.Name = lessonData.Name;
+
+    try
+    {
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (DbUpdateException ex)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "updating lesson");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+
   public async Task<LessonData?> GetLesson(int id)
   {
     var lesson = await _context.CourseLessons.FindAsync(id);
@@ -83,7 +158,6 @@ public class LessonService : ILessonService
     {
       Id = lesson.Id,
       Name = lesson.Name,
-      Description = lesson.Description,
       CourseId = lesson.CourseId,
     };
   }
@@ -103,14 +177,15 @@ public class LessonService : ILessonService
 
     return documents;
   }
-  
+
   public async Task<IdentityResult> UploadDocumentToLesson(int lessonId, DocumentData documentData)
   {
     var errorDict = new Dictionary<string, string>();
-    
+
     var documentExists = await _context.LessonResources
       .Include(lr => lr.Document)
-      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension && lr.CourseLessonId == lessonId);
+      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension &&
+                      lr.CourseLessonId == lessonId);
     if (documentExists)
     {
       errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document");
@@ -165,21 +240,21 @@ public class LessonService : ILessonService
   public async Task<IdentityResult> DeleteDocumentFromLesson(int lessonId, int documentId)
   {
     var errorDict = new Dictionary<string, string>();
-    
+
     var lessonResource = await _context.LessonResources
       .Include(lr => lr.Document)
       .FirstOrDefaultAsync(lr => lr.CourseLessonId == lessonId && lr.DocumentId == documentId);
-    
+
     var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
     {
       ("Lesson Resource", lessonResource)
     });
-    
+
     if (!checkResult.Succeeded)
     {
       return checkResult;
     }
-    
+
     try
     {
       _context.LessonResources.Remove(lessonResource!);

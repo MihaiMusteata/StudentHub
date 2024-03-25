@@ -9,5 +9,4 @@ public class CourseLessonDbTable
   public int CourseId { get; set; }
   public virtual CourseDbTable Course { get; set; }
   public string Name { get; set; }
-  public string Description { get; set; }
 }

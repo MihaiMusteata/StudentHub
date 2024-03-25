@@ -52,6 +52,55 @@ public class LessonController : ControllerBase
     return Ok(lesson);
   }
 
+  [HttpDelete("lesson")]
+  public async Task<IActionResult> DeleteLesson(int id)
+  {
+    var errors = new List<string>();
+    var result = await _lessonService.DeleteLesson(id);
+    if (result.Succeeded)
+    {
+      return Ok("Lesson deleted successfully");
+    }
+
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      errors.Add(result.Errors.First().Description);
+      return NotFound(errors);
+    }
+
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+
+  [HttpPut("lesson")]
+  public async Task<IActionResult> UpdateLesson(LessonData lessonData)
+  {
+    var errors = new List<string>();
+    var result = await _lessonService.UpdateLesson(lessonData);
+    
+    if (result.Succeeded)
+    {
+      return Ok("Lesson updated successfully");
+    }
+
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      errors.Add(result.Errors.First().Description);
+      return NotFound(errors);
+    }
+
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+
   [HttpGet("lesson-documents")]
   public async Task<IActionResult> GetLessonDocuments(int lessonId)
   {
@@ -71,7 +120,7 @@ public class LessonController : ControllerBase
       documentData.Extension = Path.GetExtension(file.FileName);
       documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
     }
-    
+
     var result = await _lessonService.UploadDocumentToLesson(lessonId, documentData);
     if (result.Succeeded)
     {
@@ -92,7 +141,7 @@ public class LessonController : ControllerBase
 
     return BadRequest(errors);
   }
-  
+
   [HttpDelete("document")]
   public async Task<IActionResult> DeleteDocumentFromLesson(int lessonId, int documentId)
   {

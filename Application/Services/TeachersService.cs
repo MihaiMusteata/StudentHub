@@ -113,7 +113,7 @@ public class TeachersService : ITeachersService
 
     var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
 
-    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object)>
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
     {
       ("Teacher", teacher)
     });
@@ -123,7 +123,7 @@ public class TeachersService : ITeachersService
       return checkResult;
     }
 
-    _context.Teachers.Remove(teacher);
+    _context.Teachers.Remove(teacher!);
 
     try
     {
@@ -148,7 +148,7 @@ public class TeachersService : ITeachersService
     var oldTeacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == teacher.Id);
     var university = await _context.Universities.FindAsync(teacher.UniversityId);
 
-    var objectsToCheck = new List<(string, object)>
+    var objectsToCheck = new List<(string, object?)>
     {
       ("User", oldUser),
       ("Teacher", oldTeacher),

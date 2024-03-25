@@ -74,7 +74,6 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
     }
   };
 
-  console.log('isLoading:', isLoading)
   return (
     <Spin spinning={isLoading} indicator={<></>}>
       <div className='col-12 text-dark d-flex justify-content-center align-items-center mb-3'>
