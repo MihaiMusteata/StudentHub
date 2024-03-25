@@ -22,10 +22,10 @@ public class DocumentsService : IDocumentsService
   {
     var errorDict = new Dictionary<string, string>();
 
-    var documentExists = await _context.Documents.AnyAsync(d => d.Name == documentData.Name);
+    var documentExists = await _context.Documents.AnyAsync(d => d.Name == documentData.Name && d.Extension == documentData.Extension);
     if (documentExists)
     {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document with this name");
+      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document");
       return IdentityResult.Failed(new IdentityError
       {
         Code = "DocumentExists",
@@ -77,7 +77,7 @@ public class DocumentsService : IDocumentsService
   public async Task<List<DocumentMinimal>> GetDocuments()
   {
     var documents = await _context.Documents
-      .Select(doc => new DocumentMinimal { Id = doc.Id, Name = doc.Name })
+      .Select(doc => new DocumentMinimal { Id = doc.Id, Name = doc.Name, Extension = doc.Extension})
       .ToListAsync();
 
     return documents;

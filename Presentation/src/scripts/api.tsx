@@ -48,10 +48,12 @@ const API_ENDPOINTS: ApiEndpoints = {
     
     // Lesson
     "lessonDocuments": (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,
-    "uploadLessonDocument": (params?: any) => `/api/Lesson/upload-document/${params?.lessonId}`,
+    "deleteLessonDocument": (params?: any) => `/api/Lesson/document?lessonId=${params?.lessonId}&documentId=${params?.documentId}`,
     
     // Document
     "uploadDocument": () => `/api/Documents/upload`,
+    "downloadDocument": (params?: any) => `/api/Documents/download?id=${params?.documentId}`,
+    
     
 };
 

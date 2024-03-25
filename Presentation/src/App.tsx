@@ -17,6 +17,7 @@ import TeacherDetails from './components/Teacher/TeacherDetails';
 import AdminDashboard from './components/Dashboard/AdminDashboard.tsx';
 import TeacherDashboard from './components/Dashboard/TeacherDashboard.tsx';
 import CoursePage from './components/Course/CoursePage.tsx';
+import Courses from './components/Course/Courses.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -115,7 +116,7 @@ function App() {
                       {user.role === 'Teacher' && (
                         <>
                           <Route path="/dashboard" element={<TeacherDashboard userId={user.id} />} />
-                          
+                          <Route path="/courses" element={<Courses userId={user.id} />} />
                           <Route path="/courses/course-page" element={<CoursePage />} />
                         </>
                       )}

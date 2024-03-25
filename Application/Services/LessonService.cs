@@ -96,7 +96,8 @@ public class LessonService : ILessonService
       .Select(doc => new DocumentMinimal
       {
         Id = doc.Document.Id,
-        Name = doc.Document.Name
+        Name = doc.Document.Name,
+        Extension = doc.Document.Extension
       })
       .ToListAsync();
 
@@ -109,10 +110,10 @@ public class LessonService : ILessonService
     
     var documentExists = await _context.LessonResources
       .Include(lr => lr.Document)
-      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.CourseLessonId == lessonId);
+      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension && lr.CourseLessonId == lessonId);
     if (documentExists)
     {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document with this name");
+      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document");
       return IdentityResult.Failed(new IdentityError
       {
         Code = "DocumentExists",
@@ -141,9 +142,7 @@ public class LessonService : ILessonService
     var lessonResource = new LessonResourceDbTable
     {
       CourseLessonId = lessonId,
-      Document = document,
-      Description = "Document for lesson",
-      Name = "Document for lesson",
+      Document = document
     };
 
     try
@@ -155,6 +154,41 @@ public class LessonService : ILessonService
     catch (Exception)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading a document to a lesson");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+
+  public async Task<IdentityResult> DeleteDocumentFromLesson(int lessonId, int documentId)
+  {
+    var errorDict = new Dictionary<string, string>();
+    
+    var lessonResource = await _context.LessonResources
+      .Include(lr => lr.Document)
+      .FirstOrDefaultAsync(lr => lr.CourseLessonId == lessonId && lr.DocumentId == documentId);
+    
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Lesson Resource", lessonResource)
+    });
+    
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+    
+    try
+    {
+      _context.LessonResources.Remove(lessonResource!);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (Exception)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "deleting a document from a lesson");
       return IdentityResult.Failed(new IdentityError
       {
         Code = "DatabaseUpdateError",

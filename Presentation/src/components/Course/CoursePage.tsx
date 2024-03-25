@@ -52,7 +52,6 @@ const CoursePage = () => {
     fetchLessons();
   }, []);
   
-  console.log(lessons);
   return (
     <>
       <div className='container-fluid py-4'>

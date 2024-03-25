@@ -92,6 +92,30 @@ public class LessonController : ControllerBase
 
     return BadRequest(errors);
   }
+  
+  [HttpDelete("document")]
+  public async Task<IActionResult> DeleteDocumentFromLesson(int lessonId, int documentId)
+  {
+    var result = await _lessonService.DeleteDocumentFromLesson(lessonId, documentId);
+    if (result.Succeeded)
+    {
+      return Ok("Document deleted successfully");
+    }
+
+    var errors = new List<string>();
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      errors.Add(result.Errors.First().Description);
+      return NotFound(errors);
+    }
+
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
 
 
 }

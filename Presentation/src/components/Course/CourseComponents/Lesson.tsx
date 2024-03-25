@@ -1,11 +1,9 @@
-import { Button, Divider } from 'antd';
+import { Button, Divider, Spin } from 'antd';
 import LessonDocument from './LessonDocument.tsx';
 import { useContext, useEffect, useState } from 'react';
 import { ApiGetRequest, ApiResponse } from '../../../scripts/api.tsx';
-import AddLessonResource from './AddLessonResource.tsx';
-import { FieldConfig as ModalFields } from '../../ModalForm.tsx';
 import LessonTask from './LessonTask.tsx';
-import { UploadOutlined } from '@ant-design/icons';
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { message, Upload } from 'antd';
 import axios, { AxiosResponse } from 'axios';
@@ -44,12 +42,15 @@ export interface Item {
   id: number;
 }
 
+interface Document extends Item {
+  extension: string;
+}
+
 const Lesson = ({name, id}: { name: string, id: number }) => {
-  const [ documents, setDocuments ] = useState<Item[]>([]);
+  const [ documents, setDocuments ] = useState<Document[]>([]);
   const [ tasks, setTasks ] = useState<Item[]>([]);
-  const [ newItem, setNewItem ] = useState<string>('');
-  const [ isModalOpen, setIsModalOpen ] = useState(false);
-  const [ response, setResponse ] = useState<ApiResponse>({status: 0, body: ''});
+  const [ documentTrigger, setDocumentTrigger ] = useState<string>('');
+  const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const setToastComponent = useContext(ToastContext);
 
   const props: UploadProps = {
@@ -60,6 +61,7 @@ const Lesson = ({name, id}: { name: string, id: number }) => {
       authorization: 'authorization-text',
     },
     async onChange(info) {
+      setIsLoading(true);
       if (info.file.status === 'done') {
         const formData = new FormData();
         formData.append('file', info.file.originFileObj as File);
@@ -67,10 +69,12 @@ const Lesson = ({name, id}: { name: string, id: number }) => {
           const result = await apiUploadDocument(id, formData);
           if (result.status === 200) {
             setToastComponent({type: 'success', message: 'Document uploaded successfully!'});
-            fetchDocuments();
+            setDocumentTrigger(`Document ${documents.length + 1} uploaded`);
+            setIsLoading(false);
           } else {
             result.body = JSON.parse(result.body);
             setToastComponent({type: 'error', message: 'Document upload failed! ' + result.body.general});
+            setIsLoading(false);
           }
         } catch (error) {
           console.error('Error:', error);
@@ -93,17 +97,11 @@ const Lesson = ({name, id}: { name: string, id: number }) => {
   };
 
   const handleAddItem = () => {
-    setIsModalOpen(true);
-  };
-
-  const selectItemType = (data: ModalFields[]) => {
-    setNewItem(data[0].value as string);
-    setIsModalOpen(false);
   };
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [ documentTrigger ]);
 
   return (
     <>
@@ -113,7 +111,14 @@ const Lesson = ({name, id}: { name: string, id: number }) => {
 
         {
           documents.map((item, index) => {
-            return <LessonDocument key={index} name={item.name} id={item.id} />;
+            return <LessonDocument
+              key={index}
+              name={item.name}
+              documentId={item.id}
+              extension={item.extension}
+              lessonId={id}
+              setDocumentTrigger={setDocumentTrigger}
+            />;
           })
         }
         <LessonTask name={'Task 1'} id={1} />
@@ -124,10 +129,13 @@ const Lesson = ({name, id}: { name: string, id: number }) => {
           })
         }
 
-        <div className='col-12 text-dark m-0 mt-4 p-0 d-flex justify-content-start mb-3 mb-lg-0 p-0 flex-column flex-sm-row'>
-          <Upload {...props} showUploadList={false} className='me-4 mb-3'>
-            <Button type='dashed' icon={<UploadOutlined />} block>Upload New Document</Button>
-          </Upload>
+        <div className='col-12 text-dark m-0 mt-4 p-0 d-flex justify-content-start mb-3 mb-lg-0 flex-column flex-sm-row'>
+
+          <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
+            <Upload {...props} showUploadList={false} className='me-4 mb-3'>
+              <Button type='dashed' icon={<UploadOutlined />} block>Upload New Document</Button>
+            </Upload>
+          </Spin>
 
           <Button type='dashed' onClick={handleAddItem}>
             + Add New Task
@@ -135,13 +143,6 @@ const Lesson = ({name, id}: { name: string, id: number }) => {
         </div>
 
       </li>
-      {
-        isModalOpen && <AddLessonResource
-          isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
-          handleSave={selectItemType}
-        />
-      }
     </>
   );
 };
