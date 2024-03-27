@@ -19,6 +19,7 @@ import TeacherDashboard from './components/Dashboard/TeacherDashboard.tsx';
 import CoursePage from './components/Course/CoursePage.tsx';
 import Courses from './components/Course/Courses.tsx';
 import Assignment from './components/Course/CourseComponents/Assignment.tsx';
+import UserContext, { useUser } from './context/userContext';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -97,45 +98,47 @@ function App() {
     <>
       <Router>
         <ToastContext.Provider value={setToastComponent}>
-          <Routes>
-            {user ? (
-              <Route
-                path="/*"
-                element={
-                  <Layout user={user} setUser={setUser}>
-                    <Routes>
-                      {user.role === 'Admin' && (
-                        <>
-                          <Route path="/dashboard" element={<AdminDashboard />} />
-                          <Route path="/users" element={<UsersPanel />} />
-                          <Route path="/students" element={<StudentsPanel />} />
-                          <Route path="/students/student" element={<StudentDetails />} />
-                          <Route path="/teachers" element={<TeachersPanel />} />
-                          <Route path="/teachers/teacher" element={<TeacherDetails />} />
-                        </>
-                      )}
-                      {user.role === 'Teacher' && (
-                        <>
-                          <Route path="/dashboard" element={<TeacherDashboard userId={user.id} />} />
-                          <Route path="/courses" element={<Courses userId={user.id} />} />
-                          <Route path="/courses/course" element={<CoursePage />} />
-                          <Route path="/courses/assignment" element={<Assignment />} />
-                        </>
-                      )}
-                      <Route path="*" element={<Navigate to="/dashboard" />} />
-                    </Routes>
-                  </Layout>
-                }
-              />
-            ) : (
-              <>
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/login" element={<Login updateUser={updateUser} setUpdateUser={setUpdateUser} />} />
-                <Route path="*" element={<Navigate to="/login" />} />
-              </>
-            )}
-            <Route path="/test" element={<Test />} />
-          </Routes>
+          <UserContext.Provider value={{user, setUser}}>
+            <Routes>
+              {user ? (
+                <Route
+                  path='/*'
+                  element={
+                    <Layout user={user} setUser={setUser}>
+                      <Routes>
+                        {user.role === 'Admin' && (
+                          <>
+                            <Route path='/dashboard' element={<AdminDashboard />} />
+                            <Route path='/users' element={<UsersPanel />} />
+                            <Route path='/students' element={<StudentsPanel />} />
+                            <Route path='/students/student' element={<StudentDetails />} />
+                            <Route path='/teachers' element={<TeachersPanel />} />
+                            <Route path='/teachers/teacher' element={<TeacherDetails />} />
+                          </>
+                        )}
+                        {user.role === 'Teacher' && (
+                          <>
+                            <Route path='/dashboard' element={<TeacherDashboard />} />
+                            <Route path='/courses' element={<Courses />} />
+                            <Route path='/courses/course' element={<CoursePage />} />
+                            <Route path='/courses/assignment' element={<Assignment />} />
+                          </>
+                        )}
+                        <Route path='*' element={<Navigate to='/dashboard' />} />
+                      </Routes>
+                    </Layout>
+                  }
+                />
+              ) : (
+                <>
+                  <Route path='/signup' element={<Signup />} />
+                  <Route path='/login' element={<Login updateUser={updateUser} setUpdateUser={setUpdateUser} />} />
+                  <Route path='*' element={<Navigate to='/login' />} />
+                </>
+              )}
+              <Route path='/test' element={<Test />} />
+            </Routes>
+          </UserContext.Provider>
         </ToastContext.Provider>
       </Router>
       <ToastContainer />

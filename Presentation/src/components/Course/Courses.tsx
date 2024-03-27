@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ApiGetRequest } from '../../scripts/api.tsx';
 import { Course } from './CoursePage.tsx';
 import { Link } from 'react-router-dom';
+import { useUser } from '../../context/userContext.tsx';
 
 const listItem = ({id, code, name, description, enrolledGroups, discipline}: Course) => {
 
@@ -26,12 +27,13 @@ const listItem = ({id, code, name, description, enrolledGroups, discipline}: Cou
   );
 };
 
-const Courses = ({userId}: { userId: string }) => {
+const Courses = () => {
   const [ teacher, setTeacher ] = useState<any>({});
   const [ courses, setCourses ] = useState<Course[]>([]);
+  const {user} = useUser();
   const fetchTeacher = async () => {
     try {
-      const result = await ApiGetRequest('teacherByUserId', {userId: userId});
+      const result = await ApiGetRequest('teacherByUserId', {userId: user?.id});
       if (result.status === 200) {
         setTeacher(result.body);
       }
@@ -60,7 +62,7 @@ const Courses = ({userId}: { userId: string }) => {
 
   useEffect(() => {
     fetchTeacher();
-  }, [ userId ]);
+  }, [ user?.id ]);
 
   useEffect(() => {
     if (teacher.id) {
