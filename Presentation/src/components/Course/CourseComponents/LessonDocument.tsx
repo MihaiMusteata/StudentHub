@@ -8,10 +8,11 @@ import {
 import { ToastContext } from '../../../App.tsx';
 import { Spin } from 'antd';
 import axios from 'axios';
+import Tooltip from '@mui/material/Tooltip';
 
 const iconMap: { [key: string]: JSX.Element } = {
   '.docx': <FileWordTwoTone twoToneColor='#0055ff' style={{fontSize: '20px'}} />,
-  '.txt': <FileTextTwoTone twoToneColor='#9c9c9c' style={{fontSize: '20px'}} />,
+  '.txt': <FileTextTwoTone twoToneColor='#798777' style={{fontSize: '20px'}} />,
   '.pdf': <FilePdfTwoTone twoToneColor='red' style={{fontSize: '20px'}} />,
   '.xls': <FileExcelTwoTone twoToneColor='#00a300' style={{fontSize: '20px'}} />,
   '.xlsx': <FileExcelTwoTone twoToneColor='#00a300' style={{fontSize: '20px'}} />,
@@ -86,10 +87,13 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
           </h6>
         </div>
         {
-          isLoading ? <LoadingOutlined className='ms-auto' /> : <ClearIcon
-            className='ms-auto cursor-pointer'
-            onClick={deleteDocument}
-          />
+          isLoading ? <LoadingOutlined className='ms-auto' /> :
+            <Tooltip title={`Delete ${name}`} placement='top'>
+              <ClearIcon
+                className='ms-auto cursor-pointer'
+                onClick={deleteDocument}
+              />
+            </Tooltip>
         }
       </div>
     </Spin>

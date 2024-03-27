@@ -15,7 +15,7 @@ const listItem = ({id, code, name, description, enrolledGroups, discipline}: Cou
         <span className='text-xs'>Discipline: <span className='text-dark ms-sm-2 font-weight-bold'>{discipline}</span></span>
       </div>
       <div className='ms-auto text-end d-flex flex-column justify-content-center'>
-        <Link to={`/courses/course-page?id=${id}`}>
+        <Link to={`/courses/course?id=${id}`}>
           <div className='btn btn-link text-danger text-gradient px-3 mb-0'>
             <VisibilityIcon className='fs-5 me-1' />
             <span>View</span>

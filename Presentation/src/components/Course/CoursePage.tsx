@@ -2,7 +2,7 @@ import { Divider } from 'antd';
 import AddIcon from '@mui/icons-material/Add';
 import Lesson, { LessonData } from './CourseComponents/Lesson.tsx';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiGetRequest } from '../../scripts/api.tsx';
 import AddNewLessonModal from './CourseComponents/AddNewLessonModal.tsx';
 
@@ -20,6 +20,7 @@ const CoursePage = () => {
   const [ lessons, setLessons ] = useState<LessonData[]>([]);
   const [ isAddModalOpen, setIsAddModalOpen ] = useState<boolean>(false);
  
+  const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get('id') as unknown as number;
@@ -45,6 +46,8 @@ const CoursePage = () => {
       const result = await ApiGetRequest('course', {id: id});
       if (result.status === 200) {
         setCourse(result.body);
+      } else {
+        navigate('/courses');
       }
     } catch (error) {
       console.log(error);

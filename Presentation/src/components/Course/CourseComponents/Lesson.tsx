@@ -2,16 +2,16 @@ import { Button, Divider, Spin } from 'antd';
 import LessonDocument from './LessonDocument.tsx';
 import { FC, useContext, useEffect, useState } from 'react';
 import { ApiDeleteRequest, ApiGetRequest, ApiResponse } from '../../../scripts/api.tsx';
-import LessonTask from './LessonTask.tsx';
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import DriveFileRenameOutlineTwoToneIcon from '@mui/icons-material/DriveFileRenameOutlineTwoTone';
 import Tooltip from '@mui/material/Tooltip';
-import type { UploadProps } from 'antd';
-import { message, Upload } from 'antd';
+import { Upload } from 'antd';
 import axios, { AxiosResponse } from 'axios';
 import { ToastContext } from '../../../App.tsx';
 import EditLessonModal from './EditLessonModal.tsx';
+import LessonAssignment from './LessonAssignment.tsx';
+import AddNewAssignmentModal from './AddNewAssignmentModal.tsx';
 
 const apiUploadDocument = async (lessonId: number, formData: FormData) => {
   try {
@@ -35,10 +35,8 @@ const apiUploadDocument = async (lessonId: number, formData: FormData) => {
   }
 };
 
-export interface LessonData {
-  id: number;
-  courseId:number;
-  name: string;
+export interface LessonData extends Item {
+  courseId: number;
 }
 
 export interface Item {
@@ -58,44 +56,34 @@ interface LessonProps {
 
 const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
   const [ documents, setDocuments ] = useState<Document[]>([]);
-  const [ tasks, setTasks ] = useState<Item[]>([]);
+  const [ assignments, setAssignments ] = useState<Item[]>([]);
   const [ documentTrigger, setDocumentTrigger ] = useState<string>('');
+  const [ assignmentTrigger, setAssignmentTrigger ] = useState<string>('');
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const [ isEditModalOpen, setIsEditModalOpen ] = useState<boolean>(false);
+  const [ isAddModalOpen, setIsAddModalOpen ] = useState<boolean>(false);
   const setToastComponent = useContext(ToastContext);
 
-  const props: UploadProps = {
-    name: 'file',
-    action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
-    maxCount: 1,
-    headers: {
-      authorization: 'authorization-text',
-    },
-    async onChange(info) {
-      setIsLoading(true);
-      if (info.file.status === 'done') {
-        const formData = new FormData();
-        formData.append('file', info.file.originFileObj as File);
-        try {
-          const result = await apiUploadDocument(lesson.id, formData);
-          if (result.status === 200) {
-            setToastComponent({type: 'success', message: 'Document uploaded successfully!'});
-            setDocumentTrigger(`Document ${documents.length + 1} uploaded`);
-            setIsLoading(false);
-          } else {
-            result.body = JSON.parse(result.body);
-            setToastComponent({type: 'error', message: 'Document upload failed! ' + result.body.general});
-            setIsLoading(false);
-          }
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+  const UploadRequest = async (file: any) => {
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('file', file.file as File);
+    try {
+      const result = await apiUploadDocument(lesson.id, formData);
+      if (result.status === 200) {
+        setToastComponent({type: 'success', message: 'Document uploaded successfully!'});
+        setDocumentTrigger(`Document ${documents.length + 1} uploaded`);
+      } else {
+        result.body = JSON.parse(result.body);
+        setToastComponent({type: 'error', message: 'Document upload failed! ' + result.body.general});
       }
-    },
+      console.log('Result:', result);
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error:', error);
+    }
+    setIsLoading(false);
   };
-
   const fetchDocuments = async () => {
     try {
       const result = await ApiGetRequest('lessonDocuments', {lessonId: lesson.id});
@@ -107,7 +95,19 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
     }
   };
 
+  const fetchAssignments = async () => {
+    try {
+      const result = await ApiGetRequest('lessonAssignments', {lessonId: lesson.id});
+      if (result.status === 200) {
+        setAssignments(result.body);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleAddTask = () => {
+    setIsAddModalOpen(true);
   };
   const DeleteLesson = async () => {
     try {
@@ -124,13 +124,17 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
     }
   };
 
-  const EditLesson = () =>{
+  const EditLesson = () => {
     setIsEditModalOpen(true);
   };
 
   useEffect(() => {
     fetchDocuments();
   }, [ documentTrigger ]);
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [ assignmentTrigger ]);
 
   return (
     <>
@@ -165,18 +169,21 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
             />;
           })
         }
-        <LessonTask name={'Task 1'} id={1} />
 
         {
-          tasks.map((item, index) => {
-            return <LessonTask key={index} name={item.name} id={item.id} />;
+          assignments.map((item, index) => {
+            return <LessonAssignment
+              key={index}
+              assignment={item}
+              setAssignmentTrigger={setAssignmentTrigger}
+            />;
           })
         }
 
         <div className='col-12 text-dark m-0 mt-4 p-0 d-flex justify-content-start mb-3 mb-lg-0 flex-column flex-sm-row'>
 
           <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
-            <Upload {...props} showUploadList={false} className='me-4 mb-3'>
+            <Upload customRequest={UploadRequest} showUploadList={false} className='me-4 mb-3'>
               <Button type='dashed' icon={<UploadOutlined />} block>Upload New Document</Button>
             </Upload>
           </Spin>
@@ -189,7 +196,21 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
       </li>
       {
         isEditModalOpen &&
-        <EditLessonModal isModalOpen={isEditModalOpen} setIsModalOpen={setIsEditModalOpen} lesson={lesson} onEditLesson={onEditLesson} />
+        <EditLessonModal
+          isModalOpen={isEditModalOpen}
+          setIsModalOpen={setIsEditModalOpen}
+          lesson={lesson}
+          onEditLesson={onEditLesson}
+        />
+      }
+      {
+        isAddModalOpen &&
+        <AddNewAssignmentModal
+          isModalOpen={isAddModalOpen}
+          setIsModalOpen={setIsAddModalOpen}
+          lessonId={lesson.id}
+          setAssignmentTrigger={setAssignmentTrigger}
+        />
       }
     </>
   );

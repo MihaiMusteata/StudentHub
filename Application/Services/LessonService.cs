@@ -117,7 +117,7 @@ public class LessonService : ILessonService
       return checkResult;
     }
     
-    var lesson = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId);
+    var lesson = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId && l.Id != lessonData.Id);
     if (lesson )
     {
       errorDict["name"] = string.Format(ErrorTemplate.ItemExists, "Lesson with this name");
@@ -242,12 +242,12 @@ public class LessonService : ILessonService
     var errorDict = new Dictionary<string, string>();
 
     var lessonResource = await _context.LessonResources
-      .Include(lr => lr.Document)
       .FirstOrDefaultAsync(lr => lr.CourseLessonId == lessonId && lr.DocumentId == documentId);
-
+    var document =  new DocumentDbTable {Id = documentId};
+    
     var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
     {
-      ("Lesson Resource", lessonResource)
+      ("Lesson Resource", lessonResource),
     });
 
     if (!checkResult.Succeeded)
@@ -258,6 +258,7 @@ public class LessonService : ILessonService
     try
     {
       _context.LessonResources.Remove(lessonResource!);
+      _context.Entry(document).State = EntityState.Deleted; 
       await _context.SaveChangesAsync();
       return IdentityResult.Success;
     }

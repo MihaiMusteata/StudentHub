@@ -81,7 +81,7 @@ public class LessonController : ControllerBase
   {
     var errors = new List<string>();
     var result = await _lessonService.UpdateLesson(lessonData);
-    
+
     if (result.Succeeded)
     {
       return Ok("Lesson updated successfully");

@@ -10,7 +10,6 @@ public class LessonAssignmentDbTable
   public virtual CourseLessonDbTable CourseLesson { get; set; }
   public string Name { get; set; }
   public string Task { get; set; }
-  public bool IsGraded { get; set; }
   public bool AllowSubmission { get; set; }
   public DateTime DueDate { get; set; }
 }

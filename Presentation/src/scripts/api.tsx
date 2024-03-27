@@ -52,7 +52,13 @@ const API_ENDPOINTS: ApiEndpoints = {
     'addLesson': () => '/api/Lesson/lesson',
     'deleteLesson': (params?: any) => `/api/Lesson/lesson?id=${params.id}`,
     'updateLesson': () => '/api/Lesson/lesson',
-    
+
+    // Lesson Assignment
+    "addLessonAssignment": () => `/api/LessonAssignment/assignment`,
+    "lessonAssignment": (params?: any) => `/api/LessonAssignment/assignment?id=${params?.id}`,
+    "deleteLessonAssignment": (params?: any) => `/api/LessonAssignment/assignment?id=${params?.id}`,
+    "updateLessonAssignment": () => `/api/LessonAssignment/assignment`,
+    "lessonAssignments": (params?: any) => `/api/LessonAssignment/assignments/${params?.lessonId}`,
     
     // Document
     "uploadDocument": () => `/api/Documents/upload`,
