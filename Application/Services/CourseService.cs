@@ -19,11 +19,22 @@ public class CourseService : ICourseService
     _context = context;
   }
 
-  public async Task<IdentityResult> CreateCourse(CourseData courseData)
+  public async Task<IdentityResult> CreateCourse(CourseForm courseData)
   {
     var errorDict = new Dictionary<string, string>();
+  
+    var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == courseData.UserId);
+    var discipline = await _context.Disciplines.FindAsync(courseData.DisciplineId);
 
-    var courseExists = await _context.Courses.AnyAsync(c => c.Name == courseData.Name);
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Discipline", discipline),
+      ("Teacher", teacher)
+    });
+    
+    var courseExists = await _context.CourseTeachers
+      .AnyAsync(ct => ct.Course.Code == courseData.Code && ct.Course.Name == courseData.Name && ct.TeacherId == teacher!.Id);
+    
     if (courseExists)
     {
       errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Course with this name");
@@ -34,12 +45,6 @@ public class CourseService : ICourseService
       });
     }
 
-    var discipline = await _context.Disciplines.FindAsync(courseData.DisciplineId);
-
-    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
-    {
-      ("Discipline", discipline)
-    });
 
     if (!checkResult.Succeeded)
     {
@@ -54,10 +59,18 @@ public class CourseService : ICourseService
       DisciplineId = courseData.DisciplineId,
       Code = courseData.Code
     };
+    
     try
     {
       await _context.Courses.AddAsync(newCourse);
       await _context.SaveChangesAsync();
+      var assignTeacherResult = await AssignTeacherToCourse(newCourse.Id, teacher!.Id);
+      if (!assignTeacherResult.Succeeded)
+      {
+        _context.Entry(newCourse).State = EntityState.Deleted;
+        await _context.SaveChangesAsync();
+        return assignTeacherResult;
+      }
       return IdentityResult.Success;
     }
     catch (Exception e)
@@ -77,7 +90,7 @@ public class CourseService : ICourseService
     var course = await _context.Courses.FindAsync(courseId);
     var teacher = await _context.Teachers.FindAsync(teacherId);
 
-    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object)>
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
     {
       ("Course", course),
       ("Teacher", teacher)
@@ -138,7 +151,7 @@ public class CourseService : ICourseService
     var course = await _context.Courses
       .Include(c => c.Discipline)
       .FirstOrDefaultAsync(c => c.Id == courseId);
-    
+
     var groups = await GetEnrolledGroups(courseId);
 
     var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
@@ -183,7 +196,7 @@ public class CourseService : ICourseService
 
     return coursesList;
   }
-  
+
   public async Task<List<LessonData>> GetCourseLessons(int courseId)
   {
     var lessons = await _context.CourseLessons

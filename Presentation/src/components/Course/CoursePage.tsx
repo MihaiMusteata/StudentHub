@@ -1,4 +1,5 @@
 import { Divider } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import AddIcon from '@mui/icons-material/Add';
 import Lesson, { LessonData } from './CourseComponents/Lesson.tsx';
 import { useEffect, useState } from 'react';
@@ -19,7 +20,7 @@ const CoursePage = () => {
   const [ course, setCourse ] = useState<Course | undefined>(undefined);
   const [ lessons, setLessons ] = useState<LessonData[]>([]);
   const [ isAddModalOpen, setIsAddModalOpen ] = useState<boolean>(false);
- 
+  
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -40,7 +41,7 @@ const CoursePage = () => {
   const AddNewLesson = () => {
     setIsAddModalOpen(true);
   };
-  
+
   const fetchCourse = async () => {
     try {
       const result = await ApiGetRequest('course', {id: id});
@@ -53,14 +54,14 @@ const CoursePage = () => {
       console.log(error);
     }
   };
-  
+
   const handleDeleteLesson = (lessonId: number) => {
     setLessons(prevLessons => prevLessons.filter(lesson => lesson.id !== lessonId));
   };
-  
+
   const handleEditLesson = (newLesson: LessonData) => {
     setLessons(prevLessons => prevLessons.map(lesson => lesson.id === newLesson.id ? newLesson : lesson));
-  } 
+  };
 
   useEffect(() => {
     fetchCourse();
@@ -89,7 +90,7 @@ const CoursePage = () => {
                       lessons.map((lesson, index) => {
                         return <Lesson
                           key={index}
-                          lesson={{id: lesson.id, name: lesson.name, courseId:id}}
+                          lesson={{id: lesson.id, name: lesson.name, courseId: id}}
                           onDeleteLesson={handleDeleteLesson}
                           onEditLesson={handleEditLesson}
                         />;

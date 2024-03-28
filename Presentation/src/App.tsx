@@ -119,7 +119,7 @@ function App() {
                         {user.role === 'Teacher' && (
                           <>
                             <Route path='/dashboard' element={<TeacherDashboard />} />
-                            <Route path='/courses' element={<Courses />} />
+                            <Route path='/courses' element={<Courses fullPage={true}/>} />
                             <Route path='/courses/course' element={<CoursePage />} />
                             <Route path='/courses/assignment' element={<Assignment />} />
                           </>

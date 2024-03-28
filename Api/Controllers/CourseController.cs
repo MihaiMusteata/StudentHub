@@ -18,7 +18,7 @@ public class CourseController : ControllerBase
   }
 
   [HttpPost("course")]
-  public async Task<IActionResult> CreateCourse(CourseData courseData)
+  public async Task<IActionResult> CreateCourse(CourseForm courseData)
   {
     var result = await _courseService.CreateCourse(courseData);
     if (result.Succeeded)

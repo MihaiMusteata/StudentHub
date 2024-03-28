@@ -45,6 +45,7 @@ const API_ENDPOINTS: ApiEndpoints = {
     "enrolledGroups": (params?: any) => `/api/Course/enrolled-groups?courseId=${params?.courseId}`,
     "courseLessons": (params?: any) => `/api/Course/course-lessons?courseId=${params?.courseId}`,
     "course": (params?: any) => `/api/Course/course?id=${params?.id}`,
+    "addCourse": () => `/api/Course/course`,
     
     // Lesson
     "lessonDocuments": (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,
