@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiGetRequest } from '../../scripts/api.tsx';
 import AddNewLessonModal from './CourseComponents/LessonComponents/AddNewLessonModal.tsx';
+import { useUser } from '../../context/userContext.tsx';
 
 export interface Course {
   id: number,
@@ -19,7 +20,8 @@ const CoursePage = () => {
   const [ course, setCourse ] = useState<Course | undefined>(undefined);
   const [ lessons, setLessons ] = useState<LessonData[]>([]);
   const [ isAddModalOpen, setIsAddModalOpen ] = useState<boolean>(false);
-  
+  const {user} = useUser();
+
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -79,16 +81,19 @@ const CoursePage = () => {
               <div className='card-header p-0 position-relative mt-n4 mx-3 z-index-2'>
                 <div className='d-flex justify-content-between align-items-center bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 px-3'>
                   <h4 className='text-white text-capitalize mb-0'>{`${course?.code} ${course?.name}`}</h4>
-                  <div className='d-flex align-items-center'>
-                    <a className='text-sm me-3 cursor-pointer' style={{color: '#03a9f4'}}>
-                      <i className='fas fa-edit me-2' />
-                      Edit
-                    </a>
-                    <a className='text-sm cursor-pointer' style={{color: '#f44335'}}>
-                      <i className='fas fa-trash-alt me-2' />
-                      Delete
-                    </a>
-                  </div>
+                  {
+                    user?.role === 'Teacher' &&
+                    <div className='d-flex align-items-center'>
+                      <a className='text-sm me-3 cursor-pointer' style={{color: '#03a9f4'}}>
+                        <i className='fas fa-edit me-2' />
+                        Edit
+                      </a>
+                      <a className='text-sm cursor-pointer' style={{color: '#f44335'}}>
+                        <i className='fas fa-trash-alt me-2' />
+                        Delete
+                      </a>
+                    </div>
+                  }
                 </div>
               </div>
               <div className='card-header pb-0 p-3 mx-3 mt-2'>
@@ -106,22 +111,24 @@ const CoursePage = () => {
                       })
                     }
                   </ul>
-
-                  <div className='card-body p-3'>
-                    <div className='row'>
-                      <div className='col-12'>
-                        <div
-                          className='btn card bg-gradient-dark border-0 border-radius-lg d-flex align-items-center justify-content-center'
-                          onClick={AddNewLesson}
-                        >
-                          <a className='text-white mb-0'>
-                            <AddIcon />
-                            Add New Lesson
-                          </a>
+                  {
+                    user?.role === 'Teacher' &&
+                    <div className='card-body p-3'>
+                      <div className='row'>
+                        <div className='col-12'>
+                          <div
+                            className='btn card bg-gradient-dark border-0 border-radius-lg d-flex align-items-center justify-content-center'
+                            onClick={AddNewLesson}
+                          >
+                            <a className='text-white mb-0'>
+                              <AddIcon />
+                              Add New Lesson
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  }
                   <Divider className='m-0 my-3' />
                 </div>
               </div>

@@ -8,6 +8,7 @@ interface DeleteAccessKeyModalProps {
   isModalOpen: boolean;
   setIsModalOpen: (isModalOpen: boolean) => void;
   course: Course;
+  setCoursesTrigger: (trigger: string) => void;
 }
 
 interface Key {
@@ -16,7 +17,7 @@ interface Key {
   groupName: string;
 }
 
-const DeleteAccessKeyModal: FC<DeleteAccessKeyModalProps> = ({isModalOpen, setIsModalOpen, course}) => {
+const DeleteAccessKeyModal: FC<DeleteAccessKeyModalProps> = ({isModalOpen, setIsModalOpen, course, setCoursesTrigger}) => {
   const [ modalFields, setModalFields ] = useState<ModalFields[]>([]);
   const [ response, setResponse ] = useState<ApiResponse | undefined>(undefined);
   const [ keys, setKeys ] = useState<Key[]>([]);
@@ -31,6 +32,7 @@ const DeleteAccessKeyModal: FC<DeleteAccessKeyModalProps> = ({isModalOpen, setIs
       const result = await ApiDeleteRequest('deleteAccessKeys', undefined, key);
       console.log("Result:", result);
       if (result.status === 200) {
+        setCoursesTrigger(`Access key deleted at ${new Date().toLocaleTimeString()}`);
         setToastComponent({type: 'success', message: 'Access Key Deleted Successfully'});
       } else {
         result.body = JSON.parse(result.body);

@@ -53,7 +53,7 @@ const Sidenav: FC<SidenavProps> = ({user}) => {
       case 'Student':
         return (
           <>
-            
+            {navItem(<CastForEducationIcon />, 'Courses', '/courses')}
           </>
         );
       default:

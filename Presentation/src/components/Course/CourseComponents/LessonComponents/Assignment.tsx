@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Item } from './Lesson.tsx';
 import { useEffect, useState } from 'react';
-import { ApiGetRequest } from "../../../../scripts/api.tsx";
+import { ApiGetRequest } from '../../../../scripts/api.tsx';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { format } from 'date-fns';
 import EditIcon from '@mui/icons-material/Edit';
 import EditAssignmentModal from './EditAssignmentModal.tsx';
+import { useUser } from '../../../../context/userContext.tsx';
 
 export interface AssignmentData extends Item {
   lessonId: number;
@@ -41,7 +42,7 @@ const Assignment = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get('id') as unknown as number;
-
+  const {user} = useUser();
   const fetchAssignment = async () => {
     try {
       const response = await ApiGetRequest('lessonAssignment', {id: id});
@@ -73,14 +74,14 @@ const Assignment = () => {
 
   useEffect(() => {
     fetchAssignment();
-    console.log("Assignment Trigger: ", assignmentTrigger)
+    console.log('Assignment Trigger: ', assignmentTrigger);
   }, [ assignmentTrigger ]);
 
-  const renderRow = (index: number, label: string, value: string ) => {
+  const renderRow = (index: number, label: string, value: string) => {
     return (
       <tr key={index} style={{backgroundColor: `rgba(0,0,0,${0.05 * (index % 2)})`}}>
-        <td className='fw-bold ' style={{color: 'rgba(0,0,0,0.8)'}}>{label}</td>
-        <td style={{color: 'rgba(0, 0, 0, 0.8)'}}>{value}</td>
+        <td className='fw-bold ' style={{color: 'black'}}>{label}</td>
+        <td style={{color: 'black'}}>{value}</td>
       </tr>
     );
   };
@@ -128,11 +129,17 @@ const Assignment = () => {
                       </tbody>
                     </table>
 
-                    <button className='btn btn-primary mt-4'>Add Submission</button>
-                    <button className='btn btn-primary mt-4' onClick={editAssignment}>
-                      <EditIcon className='fs-5 me-1' />
-                      <span>Edit</span>
-                    </button>
+                    {
+                      user?.role === 'Student' &&
+                      <button className='btn btn-primary mt-4'>Add Submission</button>
+                    }
+                    {
+                      user?.role === 'Teacher' &&
+                      <button className='btn btn-primary mt-4' onClick={editAssignment}>
+                        <EditIcon className='fs-5 me-1' />
+                        <span>Edit</span>
+                      </button>
+                    }
                   </div>
                 </div>
               </div>

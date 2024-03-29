@@ -32,7 +32,7 @@ public class StudentHubContext : IdentityDbContext<User>
     public DbSet<SubmissionDbTable> Submissions { get; set; }
     public DbSet<LessonAssignmentDbTable> LessonAssignments { get; set; }
     public DbSet<LessonResourceDbTable> LessonResources { get; set; }
-    
+    public DbSet<CourseEnrolledStudentsDbTable> CourseEnrolledStudents { get; set; }
     
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)

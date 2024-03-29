@@ -10,16 +10,18 @@ import { Item } from './Lesson.tsx';
 import Tooltip from '@mui/material/Tooltip';
 import { ApiDeleteRequest } from '../../../../scripts/api.tsx';
 import { ToastContext } from '../../../../App.tsx';
+import { useUser } from '../../../../context/userContext.tsx';
 
 interface LessonTaskProps {
   assignment: Item;
   setAssignmentTrigger: (trigger: string) => void;
 }
 
-const LessonAssignment: FC<LessonTaskProps> = ({assignment,setAssignmentTrigger}) => {
+const LessonAssignment: FC<LessonTaskProps> = ({assignment, setAssignmentTrigger}) => {
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const setToastComponent = useContext(ToastContext);
   const navigate = useNavigate();
+  const {user} = useUser();
   const accessTask = () => {
     navigate(`/courses/assignment?id=${assignment.id}`);
   };
@@ -41,7 +43,7 @@ const LessonAssignment: FC<LessonTaskProps> = ({assignment,setAssignmentTrigger}
   };
   return (
     <Spin spinning={isLoading} indicator={<></>}>
-      <div className='col-12 text-dark d-flex justify-content-center align-items-center mb-3'>
+      <div className='col-12 text-dark d-flex align-items-center mb-3'>
         <div className='d-flex cursor-pointer' onClick={accessTask}>
           <AssignmentTwoToneIcon style={{color: '#03506F'}} />
           <h6 className='font-weight-normal m-0 ms-2 text-start'>
@@ -49,20 +51,32 @@ const LessonAssignment: FC<LessonTaskProps> = ({assignment,setAssignmentTrigger}
           </h6>
         </div>
         {
-          isLoading ? <LoadingOutlined className='ms-auto' /> :
-            <>
-              <div className='ms-auto'>
-                <CheckBoxOutlineBlankIcon />
-                {/*<CheckBoxIcon style={{color:'green'}}/>*/}
-
-                <Tooltip title={`Delete ${assignment.name}`} placement='top'>
-                  <ClearIcon
-                    className='cursor-pointer'
-                    onClick={deleteAssignment}
-                  />
-                </Tooltip>
-              </div>
-            </>
+          user?.role === 'Teacher' &&
+          <>
+            {
+              isLoading ? <LoadingOutlined className='ms-auto' /> :
+                <>
+                  <div className='ms-auto'>
+                    <CheckBoxOutlineBlankIcon />
+                    <Tooltip title={`Delete ${assignment.name}`} placement='top'>
+                      <ClearIcon
+                        className='cursor-pointer'
+                        onClick={deleteAssignment}
+                      />
+                    </Tooltip>
+                  </div>
+                </>
+            }
+          </>
+        }
+        {
+          user?.role === 'Student' &&
+          <>
+            <div className='ms-auto'>
+              <CheckBoxOutlineBlankIcon />
+              {/*<CheckBoxIcon style={{color:'green'}}/>*/}
+            </div>
+          </>
         }
       </div>
     </Spin>

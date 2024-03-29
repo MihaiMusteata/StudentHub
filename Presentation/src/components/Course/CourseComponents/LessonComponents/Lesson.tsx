@@ -12,6 +12,7 @@ import { ToastContext } from '../../../../App.tsx';
 import EditLessonModal from './EditLessonModal.tsx';
 import LessonAssignment from './LessonAssignment.tsx';
 import AddNewAssignmentModal from './AddNewAssignmentModal.tsx';
+import { useUser } from '../../../../context/userContext.tsx';
 
 const apiUploadDocument = async (lessonId: number, formData: FormData) => {
   try {
@@ -63,6 +64,7 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
   const [ isEditModalOpen, setIsEditModalOpen ] = useState<boolean>(false);
   const [ isAddModalOpen, setIsAddModalOpen ] = useState<boolean>(false);
   const setToastComponent = useContext(ToastContext);
+  const {user} = useUser();
 
   const UploadRequest = async (file: any) => {
     setIsLoading(true);
@@ -141,18 +143,25 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
       <li className='list-group-item border-0 p-4 mb-4 bg-gray-100 border-radius-lg'>
         <div className='d-flex align-items-center justify-content-between'>
           <h5 className='m-0'>{lesson.name}</h5>
-          <div>
-            <Tooltip title={`Rename ${lesson.name}`} placement='top'>
-              <DriveFileRenameOutlineTwoToneIcon
-                className='cursor-pointer'
-                style={{color: '#03a9f4'}}
-                onClick={EditLesson}
-              />
-            </Tooltip>
-            <Tooltip title={`Delete ${lesson.name}`} placement='top'>
-              <IndeterminateCheckBoxIcon className='cursor-pointer' style={{color: '#f44335'}} onClick={DeleteLesson} />
-            </Tooltip>
-          </div>
+          {
+            user?.role === 'Teacher' &&
+            <div>
+              <Tooltip title={`Rename ${lesson.name}`} placement='top'>
+                <DriveFileRenameOutlineTwoToneIcon
+                  className='cursor-pointer'
+                  style={{color: '#03a9f4'}}
+                  onClick={EditLesson}
+                />
+              </Tooltip>
+              <Tooltip title={`Delete ${lesson.name}`} placement='top'>
+                <IndeterminateCheckBoxIcon
+                  className='cursor-pointer'
+                  style={{color: '#f44335'}}
+                  onClick={DeleteLesson}
+                />
+              </Tooltip>
+            </div>
+          }
         </div>
 
         <Divider className='m-0 my-3' />
@@ -180,37 +189,43 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
           })
         }
 
-        <div className='col-12 text-dark m-0 mt-4 p-0 d-flex justify-content-start mb-3 mb-lg-0 flex-column flex-sm-row'>
+        {
+          user?.role === 'Teacher' &&
+          <div className='col-12 text-dark m-0 mt-4 p-0 d-flex justify-content-start mb-3 mb-lg-0 flex-column flex-sm-row'>
+            <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
+              <Upload customRequest={UploadRequest} showUploadList={false} className='me-4 mb-3'>
+                <Button type='dashed' icon={<UploadOutlined />} block>Upload New Document</Button>
+              </Upload>
+            </Spin>
 
-          <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
-            <Upload customRequest={UploadRequest} showUploadList={false} className='me-4 mb-3'>
-              <Button type='dashed' icon={<UploadOutlined />} block>Upload New Document</Button>
-            </Upload>
-          </Spin>
-
-          <Button type='dashed' onClick={handleAddTask}>
-            + Add New Task
-          </Button>
-        </div>
-
+            <Button type='dashed' onClick={handleAddTask}>
+              + Add New Task
+            </Button>
+          </div>
+        }
       </li>
       {
-        isEditModalOpen &&
-        <EditLessonModal
-          isModalOpen={isEditModalOpen}
-          setIsModalOpen={setIsEditModalOpen}
-          lesson={lesson}
-          onEditLesson={onEditLesson}
-        />
-      }
-      {
-        isAddModalOpen &&
-        <AddNewAssignmentModal
-          isModalOpen={isAddModalOpen}
-          setIsModalOpen={setIsAddModalOpen}
-          lessonId={lesson.id}
-          setAssignmentTrigger={setAssignmentTrigger}
-        />
+        user?.role === 'Teacher' &&
+        <>
+          {
+            isEditModalOpen &&
+            <EditLessonModal
+              isModalOpen={isEditModalOpen}
+              setIsModalOpen={setIsEditModalOpen}
+              lesson={lesson}
+              onEditLesson={onEditLesson}
+            />
+          }
+          {
+            isAddModalOpen &&
+            <AddNewAssignmentModal
+              isModalOpen={isAddModalOpen}
+              setIsModalOpen={setIsAddModalOpen}
+              lessonId={lesson.id}
+              setAssignmentTrigger={setAssignmentTrigger}
+            />
+          }
+        </>
       }
     </>
   );

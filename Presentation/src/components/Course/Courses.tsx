@@ -79,16 +79,16 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
     setCourse(course);
     setIsDeleteAccessKeyModalOpen(true);
   };
-  
+
   const handleRemoveTeacher = (course: CourseItem) => {
     setCourse(course);
     setIsRemoveTeacherModalOpen(true);
-  }
-  
+  };
+
   const handleAddTeacher = (course: CourseItem) => {
     setCourse(course);
     setIsAddTeacherModalOpen(true);
-  }
+  };
 
   const handleView = (course: CourseItem) => {
     navigate(`/courses/course?id=${course.id}`);
@@ -215,27 +215,32 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
                   }
                   {
                     fullPage ?
-                      <li
-                        className='list-group-item border-1 border-dashed d-flex p-4 mb-4 border-radius-lg '
-                        style={{backgroundColor: 'rgba(248,249,250,0.5)'}}
-                      >
-                        <div className='d-flex flex-column opacity-7'>
-                          <h6 className='mb-3 text-md'>New Course</h6>
-                          <span className='mb-2 text-sm'>Description: <span className='text-dark font-weight-bold ms-sm-2'>None</span></span>
-                          <span className='mb-2 text-sm'>Enrolled Groups: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
-                          <span className='text-sm'>Discipline: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
-                        </div>
-                        <div className='ms-auto text-end d-flex flex-column justify-content-center'>
-                          <div className='btn btn-link text-success text-gradient px-3 mb-0'>
-                            <Tooltip title='Create new course' placement='top'>
-                              <div onClick={handleCreate}>
-                                <AddBoxIcon className='fs-5 me-1' />
-                                <span>Create</span>
+                      <>
+                        {
+                          user?.role === 'Teacher' &&
+                          <li
+                            className='list-group-item border-1 border-dashed d-flex p-4 mb-4 border-radius-lg '
+                            style={{backgroundColor: 'rgba(248,249,250,0.5)'}}
+                          >
+                            <div className='d-flex flex-column opacity-7'>
+                              <h6 className='mb-3 text-md'>New Course</h6>
+                              <span className='mb-2 text-sm'>Description: <span className='text-dark font-weight-bold ms-sm-2'>None</span></span>
+                              <span className='mb-2 text-sm'>Enrolled Groups: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
+                              <span className='text-sm'>Discipline: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
+                            </div>
+                            <div className='ms-auto text-end d-flex flex-column justify-content-center'>
+                              <div className='btn btn-link text-success text-gradient px-3 mb-0'>
+                                <Tooltip title='Create new course' placement='top'>
+                                  <div onClick={handleCreate}>
+                                    <AddBoxIcon className='fs-5 me-1' />
+                                    <span>Create</span>
+                                  </div>
+                                </Tooltip>
                               </div>
-                            </Tooltip>
-                          </div>
-                        </div>
-                      </li>
+                            </div>
+                          </li>
+                        }
+                      </>
                       :
                       <>
                         <div className='d-flex flex-row justify-content-center'>
@@ -254,44 +259,51 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
         </div>
       </div>
       {
-        isAddNewCourseModalOpen &&
-        <AddNewCourseModal
-          isModalOpen={isAddNewCourseModalOpen}
-          setIsModalOpen={setIsAddNewCourseModalOpen}
-          setCoursesTrigger={setCoursesTrigger}
-        />
-      }
-      {
-        isAddAccessKeyModalOpen &&
-        <AddNewAccessKeyModal
-          isModalOpen={isAddAccessKeyModalOpen}
-          setIsModalOpen={setIsAddAccessKeyModalOpen}
-          course={course!}
-        />
-      }
-      {
-        isDeleteAccessKeyModalOpen &&
-        <DeleteAccessKeyModal
-          isModalOpen={isDeleteAccessKeyModalOpen}
-          setIsModalOpen={setIsDeleteAccessKeyModalOpen}
-          course={course!}
-        />
-      }
-      {
-        isAddTeacherModalOpen &&
-        <AddTeacherModal
-          isModalOpen={isAddTeacherModalOpen}
-          setIsModalOpen={setIsAddTeacherModalOpen}
-          course={course!}
-        />
-      }
-      {
-        isRemoveTeacherModalOpen &&
-        <RemoveTeacherModal
-          isModalOpen={isRemoveTeacherModalOpen}
-          setIsModalOpen={setIsRemoveTeacherModalOpen}
-          course={course!}
-        />
+        user?.role === 'Teacher' &&
+        <>
+          {
+            isAddNewCourseModalOpen &&
+            <AddNewCourseModal
+              isModalOpen={isAddNewCourseModalOpen}
+              setIsModalOpen={setIsAddNewCourseModalOpen}
+              setCoursesTrigger={setCoursesTrigger}
+            />
+          }
+          {
+            isAddAccessKeyModalOpen &&
+            <AddNewAccessKeyModal
+              isModalOpen={isAddAccessKeyModalOpen}
+              setIsModalOpen={setIsAddAccessKeyModalOpen}
+              setCoursesTrigger={setCoursesTrigger}
+              course={course!}
+            />
+          }
+          {
+            isDeleteAccessKeyModalOpen &&
+            <DeleteAccessKeyModal
+              isModalOpen={isDeleteAccessKeyModalOpen}
+              setIsModalOpen={setIsDeleteAccessKeyModalOpen}
+              setCoursesTrigger={setCoursesTrigger}
+              course={course!}
+            />
+          }
+          {
+            isAddTeacherModalOpen &&
+            <AddTeacherModal
+              isModalOpen={isAddTeacherModalOpen}
+              setIsModalOpen={setIsAddTeacherModalOpen}
+              course={course!}
+            />
+          }
+          {
+            isRemoveTeacherModalOpen &&
+            <RemoveTeacherModal
+              isModalOpen={isRemoveTeacherModalOpen}
+              setIsModalOpen={setIsRemoveTeacherModalOpen}
+              course={course!}
+            />
+          }
+        </>
       }
     </>
   );

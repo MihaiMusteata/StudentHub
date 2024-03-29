@@ -7,6 +7,7 @@ import { Course } from '../CoursePage.tsx';
 interface AddNewAccessKeyModalProps {
   isModalOpen: boolean;
   setIsModalOpen: (isModalOpen: boolean) => void;
+  setCoursesTrigger: (trigger: string) => void;
   course: Course;
 }
 
@@ -15,7 +16,7 @@ interface Group {
   name: string;
 }
 
-const AddNewAccessKeyModal: FC<AddNewAccessKeyModalProps> = ({isModalOpen, setIsModalOpen, course}) => {
+const AddNewAccessKeyModal: FC<AddNewAccessKeyModalProps> = ({isModalOpen, setIsModalOpen, course,setCoursesTrigger}) => {
   const [ modalFields, setModalFields ] = useState<ModalFields[]>([]);
   const [ response, setResponse ] = useState<ApiResponse | undefined>(undefined);
   const [ groups, setGroups ] = useState<Group[]>([]);
@@ -32,6 +33,7 @@ const AddNewAccessKeyModal: FC<AddNewAccessKeyModalProps> = ({isModalOpen, setIs
       const result = await ApiPostRequest('addAccessKey', undefined, accessKey);
       
       if (result.status === 200) {
+        setCoursesTrigger(`New access key added at ${new Date().toLocaleTimeString()}`);
         setToastComponent({type: 'success', message: 'Access Key Added Successfully'});
       } else {
         result.body = JSON.parse(result.body);

@@ -9,6 +9,7 @@ import { ToastContext } from '../../../../App.tsx';
 import { Spin } from 'antd';
 import axios from 'axios';
 import Tooltip from '@mui/material/Tooltip';
+import { useUser } from '../../../../context/userContext.tsx';
 
 const iconMap: { [key: string]: JSX.Element } = {
   '.docx': <FileWordTwoTone twoToneColor='#0055ff' style={{fontSize: '20px'}} />,
@@ -36,6 +37,7 @@ export interface LessonDocumentProps {
 const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, documentId}: LessonDocumentProps) => {
   const setToastComponent = useContext(ToastContext);
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const {user} = useUser();
   const downloadDocument = async () => {
     setIsLoading(true);
     try {
@@ -77,7 +79,7 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
 
   return (
     <Spin spinning={isLoading} indicator={<></>}>
-      <div className='col-12 text-dark d-flex justify-content-center align-items-center mb-3'>
+      <div className='col-12 text-dark d-flex align-items-center mb-3'>
         <div className='d-flex cursor-pointer' onClick={downloadDocument}>
           {
             iconMap[extension] || iconMap['default']
@@ -87,13 +89,18 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
           </h6>
         </div>
         {
-          isLoading ? <LoadingOutlined className='ms-auto' /> :
-            <Tooltip title={`Delete ${name}`} placement='top'>
-              <ClearIcon
-                className='ms-auto cursor-pointer'
-                onClick={deleteDocument}
-              />
-            </Tooltip>
+          user?.role === 'Teacher' &&
+          <>
+            {
+              isLoading ? <LoadingOutlined className='ms-auto' /> :
+                <Tooltip title={`Delete ${name}`} placement='top'>
+                  <ClearIcon
+                    className='ms-auto cursor-pointer'
+                    onClick={deleteDocument}
+                  />
+                </Tooltip>
+            }
+          </>
         }
       </div>
     </Spin>
