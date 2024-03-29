@@ -79,6 +79,16 @@ const CoursePage = () => {
               <div className='card-header p-0 position-relative mt-n4 mx-3 z-index-2'>
                 <div className='d-flex justify-content-between align-items-center bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 px-3'>
                   <h4 className='text-white text-capitalize mb-0'>{`${course?.code} ${course?.name}`}</h4>
+                  <div className='d-flex align-items-center'>
+                    <a className='text-sm me-3 cursor-pointer' style={{color: '#03a9f4'}}>
+                      <i className='fas fa-edit me-2' />
+                      Edit
+                    </a>
+                    <a className='text-sm cursor-pointer' style={{color: '#f44335'}}>
+                      <i className='fas fa-trash-alt me-2' />
+                      Delete
+                    </a>
+                  </div>
                 </div>
               </div>
               <div className='card-header pb-0 p-3 mx-3 mt-2'>

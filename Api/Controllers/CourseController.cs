@@ -101,6 +101,37 @@ public class CourseController : ControllerBase
 
     return BadRequest(errors);
   }
+  
+  [HttpDelete("remove-teacher-from-course")]
+  public async Task<IActionResult> RemoveTeacherFromCourse(int courseId, int teacherId)
+  {
+    var errors = new List<string>();
+    var result = await _courseService.RemoveTeacherFromCourse(courseId, teacherId);
+    if (result.Succeeded)
+    {
+      return Ok("Teacher Removed");
+    }
+    
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      errors.Add(result.Errors.First().Description);
+      return NotFound(errors);
+    }
+    
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+  
+  [HttpGet("available-teachers")]
+  public async Task<IActionResult> GetAvailableTeachers(int courseId)
+  {
+    var teachers = await _courseService.GetAvailableTeachers(courseId);
+    return Ok(teachers);
+  }
 
   [HttpGet("enrolled-groups")]
   public async Task<IActionResult> GetEnrolledGroups(int courseId)
@@ -123,6 +154,13 @@ public class CourseController : ControllerBase
       });
     }
     return Ok(courses);
+  }
+  
+  [HttpGet("course-teachers")]
+  public async Task<IActionResult> GetCourseTeachers(int courseId)
+  {
+    var teachers = await _courseService.GetCourseTeachers(courseId);
+    return Ok(teachers);
   }
 
   [HttpGet("course")]

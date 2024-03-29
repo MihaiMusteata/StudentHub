@@ -49,6 +49,10 @@ const API_ENDPOINTS: ApiEndpoints = {
     "addAccessKey": () => `/api/Course/access-key`,
     "deleteAccessKeys": () => `/api/Course/access-keys`,
     "accessKeys": (params?: any) => `/api/Course/access-keys?courseId=${params?.courseId}`,
+    "availableTeachers": (params?: any) => `/api/Course/available-teachers?courseId=${params?.courseId}`,
+    "assignTeacherToCourse": (params?: any) => `/api/Course/assign-teacher-to-course?courseId=${params?.courseId}&teacherId=${params?.teacherId}`,
+    "removeTeacherFromCourse": (params?: any) => `/api/Course/remove-teacher-from-course?courseId=${params?.courseId}&teacherId=${params?.teacherId}`,
+    "courseTeachers": (params?: any) => `/api/Course/course-teachers?courseId=${params?.courseId}`,
     
     // Lesson
     "lessonDocuments": (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,

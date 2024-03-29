@@ -16,6 +16,8 @@ import AddNewCourseModal from './AddNewCourseModal.tsx';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddNewAccessKeyModal from './CourseComponents/AddNewAccessKeyModal.tsx';
 import DeleteAccessKeyModal from './CourseComponents/DeleteAccessKeyModal.tsx';
+import AddTeacherModal from './CourseComponents/AddTeacherModal.tsx';
+import RemoveTeacherModal from './CourseComponents/RemoveTeacherModal.tsx';
 
 interface CourseItem extends Course {
   isMenuOpen: boolean;
@@ -29,6 +31,8 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
   const [ isAddNewCourseModalOpen, setIsAddNewCourseModalOpen ] = useState(false);
   const [ isAddAccessKeyModalOpen, setIsAddAccessKeyModalOpen ] = useState(false);
   const [ isDeleteAccessKeyModalOpen, setIsDeleteAccessKeyModalOpen ] = useState(false);
+  const [ isAddTeacherModalOpen, setIsAddTeacherModalOpen ] = useState(false);
+  const [ isRemoveTeacherModalOpen, setIsRemoveTeacherModalOpen ] = useState(false);
   const {user} = useUser();
   const navigate = useNavigate();
   const fetchTeacher = async () => {
@@ -75,6 +79,16 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
     setCourse(course);
     setIsDeleteAccessKeyModalOpen(true);
   };
+  
+  const handleRemoveTeacher = (course: CourseItem) => {
+    setCourse(course);
+    setIsRemoveTeacherModalOpen(true);
+  }
+  
+  const handleAddTeacher = (course: CourseItem) => {
+    setCourse(course);
+    setIsAddTeacherModalOpen(true);
+  }
 
   const handleView = (course: CourseItem) => {
     navigate(`/courses/course?id=${course.id}`);
@@ -89,12 +103,12 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
     {
       icon: <PersonAddAltTwoToneIcon className='fs-5 me-2' style={{color: 'green'}} />,
       title: 'Add Teacher',
-      onClick: () => {},
+      onClick: handleAddTeacher,
     },
     {
       icon: <PersonRemoveTwoToneIcon className='fs-5 me-2' style={{color: 'red'}} />,
       title: 'Remove Teacher',
-      onClick: () => {},
+      onClick: handleRemoveTeacher,
     },
     {
       icon: <VpnKeyTwoToneIcon className='fs-5 me-2' style={{color: 'green'}} />,
@@ -260,6 +274,22 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
         <DeleteAccessKeyModal
           isModalOpen={isDeleteAccessKeyModalOpen}
           setIsModalOpen={setIsDeleteAccessKeyModalOpen}
+          course={course!}
+        />
+      }
+      {
+        isAddTeacherModalOpen &&
+        <AddTeacherModal
+          isModalOpen={isAddTeacherModalOpen}
+          setIsModalOpen={setIsAddTeacherModalOpen}
+          course={course!}
+        />
+      }
+      {
+        isRemoveTeacherModalOpen &&
+        <RemoveTeacherModal
+          isModalOpen={isRemoveTeacherModalOpen}
+          setIsModalOpen={setIsRemoveTeacherModalOpen}
           course={course!}
         />
       }

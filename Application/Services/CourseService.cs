@@ -22,7 +22,7 @@ public class CourseService : ICourseService
   public async Task<IdentityResult> CreateCourse(CourseForm courseData)
   {
     var errorDict = new Dictionary<string, string>();
-  
+
     var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == courseData.UserId);
     var discipline = await _context.Disciplines.FindAsync(courseData.DisciplineId);
 
@@ -31,10 +31,11 @@ public class CourseService : ICourseService
       ("Discipline", discipline),
       ("Teacher", teacher)
     });
-    
+
     var courseExists = await _context.CourseTeachers
-      .AnyAsync(ct => ct.Course.Code == courseData.Code && ct.Course.Name == courseData.Name && ct.TeacherId == teacher!.Id);
-    
+      .AnyAsync(ct
+        => ct.Course.Code == courseData.Code && ct.Course.Name == courseData.Name && ct.TeacherId == teacher!.Id);
+
     if (courseExists)
     {
       errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Course with this name");
@@ -58,7 +59,7 @@ public class CourseService : ICourseService
       DisciplineId = courseData.DisciplineId,
       Code = courseData.Code
     };
-    
+
     try
     {
       await _context.Courses.AddAsync(newCourse);
@@ -85,22 +86,25 @@ public class CourseService : ICourseService
   public async Task<IdentityResult> CreateAccessKey(AccessData accessData)
   {
     var errorDict = new Dictionary<string, string>();
-    
+
     var course = await _context.Courses.FindAsync(accessData.CourseId);
     var groups = await _context.Groups
       .Where(g => accessData.GroupsIds.Contains(g.Id))
       .ToListAsync();
-    
-    var checkCourseResult = ErrorChecker.CheckNullObjects(new List<(string, object?)> { ("Course", course) });
+
+    var checkCourseResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Course", course)
+    });
     if (!checkCourseResult.Succeeded) return checkCourseResult;
 
     var checkGroupsResult = ErrorChecker.CheckNullObjects(groups.Select(g => ("One of the groups", (object?)g)));
     if (!checkGroupsResult.Succeeded) return checkGroupsResult;
 
-    
+
     var accessKeyExists = await _context.CourseAccessKeys
       .AnyAsync(cak => cak.CourseId == accessData.CourseId && cak.AccessKey == accessData.AccessKey);
-    
+
     if (accessKeyExists)
     {
       errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Access Key");
@@ -110,8 +114,8 @@ public class CourseService : ICourseService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
-    
-    foreach(var group in groups)
+
+    foreach (var group in groups)
     {
       var newAccessKey = new CourseAccessKeyDbTable()
       {
@@ -121,7 +125,7 @@ public class CourseService : ICourseService
       };
       await _context.CourseAccessKeys.AddAsync(newAccessKey);
     }
-    
+
     try
     {
       await _context.SaveChangesAsync();
@@ -135,11 +139,11 @@ public class CourseService : ICourseService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
-    
-    
+
+
     return IdentityResult.Success;
-    
-    
+
+
   }
 
   public async Task<IdentityResult> AssignTeacherToCourse(int courseId, int teacherId)
@@ -185,6 +189,51 @@ public class CourseService : ICourseService
     catch (Exception e)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "adding a teacher to a course");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+
+  public async Task<IdentityResult> RemoveTeacherFromCourse(int courseId, int teacherId)
+  {
+    var errorDict = new Dictionary<string, string>();
+    var course = await _context.Courses.FindAsync(courseId);
+    var teacher = await _context.Teachers.FindAsync(teacherId);
+
+    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
+    {
+      ("Course", course),
+      ("Teacher", teacher)
+    });
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+
+    var courseTeacher = await _context.CourseTeachers
+      .FirstOrDefaultAsync(ct => ct.CourseId == courseId && ct.TeacherId == teacherId);
+    if (courseTeacher is null)
+    {
+      errorDict["general"] = "Teacher is not assigned to this course";
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "TeacherNotAssigned",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+
+    try
+    {
+      _context.CourseTeachers.Remove(courseTeacher);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (Exception e)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "removing the teacher from the course");
       return IdentityResult.Failed(new IdentityError
       {
         Code = "DatabaseUpdateError",
@@ -254,6 +303,40 @@ public class CourseService : ICourseService
 
     return coursesList;
   }
+  
+  public async Task<List<Teacher>> GetCourseTeachers(int courseId)
+  {
+    var teachers = await _context.CourseTeachers
+      .Where(ct => ct.CourseId == courseId)
+      .Select(ct => new Teacher
+      {
+        Id = ct.Teacher.Id,
+        FirstName = ct.Teacher.User.FirstName,
+        LastName = ct.Teacher.User.LastName,
+        UserId = ct.Teacher.UserId,
+        UniversityId = ct.Teacher.UniversityId
+      })
+      .ToListAsync();
+
+    return teachers;
+  }
+
+  public async Task<List<Teacher>> GetAvailableTeachers(int courseId)
+  {
+    var teachers = await _context.Teachers
+      .Where(t => !_context.CourseTeachers.Any(ct => ct.TeacherId == t.Id && ct.CourseId == courseId))
+      .Select(t => new Teacher
+      {
+        Id = t.Id,
+        FirstName = t.User.FirstName,
+        LastName = t.User.LastName,
+        UserId = t.UserId,
+        UniversityId = t.UniversityId
+      })
+      .ToListAsync();
+
+    return teachers;
+  }
 
   public async Task<List<LessonData>> GetCourseLessons(int courseId)
   {
@@ -284,7 +367,7 @@ public class CourseService : ICourseService
 
     return accessKeys;
   }
-  
+
   public async Task<IdentityResult> DeleteAccessKey(AccessKeysData accessKeysIds)
   {
     var errorDict = new Dictionary<string, string>();
