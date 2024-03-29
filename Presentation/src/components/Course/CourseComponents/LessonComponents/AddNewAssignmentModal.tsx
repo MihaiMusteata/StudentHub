@@ -1,7 +1,7 @@
 import { FC, useContext, useEffect, useState } from 'react';
-import ModalForm, { FieldConfig as ModalFields } from '../../ModalForm.tsx';
-import { ApiPostRequest, ApiResponse } from '../../../scripts/api.tsx';
-import { ToastContext } from '../../../App.tsx';
+import ModalForm, { FieldConfig as ModalFields } from '../../../ModalForm.tsx';
+import { ApiPostRequest, ApiResponse } from '../../../../scripts/api.tsx';
+import { ToastContext } from '../../../../App.tsx';
 
 interface AddNewAssignmentModalProps {
   isModalOpen: boolean;

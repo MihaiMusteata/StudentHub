@@ -8,8 +8,8 @@ import { FC, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Item } from './Lesson.tsx';
 import Tooltip from '@mui/material/Tooltip';
-import { ApiDeleteRequest } from '../../../scripts/api.tsx';
-import { ToastContext } from '../../../App.tsx';
+import { ApiDeleteRequest } from '../../../../scripts/api.tsx';
+import { ToastContext } from '../../../../App.tsx';
 
 interface LessonTaskProps {
   assignment: Item;

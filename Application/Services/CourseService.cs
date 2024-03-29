@@ -45,7 +45,6 @@ public class CourseService : ICourseService
       });
     }
 
-
     if (!checkResult.Succeeded)
     {
       return checkResult;
@@ -82,6 +81,65 @@ public class CourseService : ICourseService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
+  }
+  public async Task<IdentityResult> CreateAccessKey(AccessData accessData)
+  {
+    var errorDict = new Dictionary<string, string>();
+    
+    var course = await _context.Courses.FindAsync(accessData.CourseId);
+    var groups = await _context.Groups
+      .Where(g => accessData.GroupsIds.Contains(g.Id))
+      .ToListAsync();
+    
+    var checkCourseResult = ErrorChecker.CheckNullObjects(new List<(string, object?)> { ("Course", course) });
+    if (!checkCourseResult.Succeeded) return checkCourseResult;
+
+    var checkGroupsResult = ErrorChecker.CheckNullObjects(groups.Select(g => ("One of the groups", (object?)g)));
+    if (!checkGroupsResult.Succeeded) return checkGroupsResult;
+
+    
+    var accessKeyExists = await _context.CourseAccessKeys
+      .AnyAsync(cak => cak.CourseId == accessData.CourseId && cak.AccessKey == accessData.AccessKey);
+    
+    if (accessKeyExists)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Access Key");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "AccessKeyExists",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+    
+    foreach(var group in groups)
+    {
+      var newAccessKey = new CourseAccessKeyDbTable()
+      {
+        CourseId = accessData.CourseId,
+        GroupId = group.Id,
+        AccessKey = accessData.AccessKey
+      };
+      await _context.CourseAccessKeys.AddAsync(newAccessKey);
+    }
+    
+    try
+    {
+      await _context.SaveChangesAsync();
+    }
+    catch (Exception e)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "creating a new access key");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+    
+    
+    return IdentityResult.Success;
+    
+    
   }
 
   public async Task<IdentityResult> AssignTeacherToCourse(int courseId, int teacherId)
@@ -212,5 +270,46 @@ public class CourseService : ICourseService
     return lessons;
   }
 
+  public async Task<List<AccessKeyData>> GetCourseAccessKeys(int courseId)
+  {
+    var accessKeys = await _context.CourseAccessKeys
+      .Where(cak => cak.CourseId == courseId)
+      .Select(cak => new AccessKeyData
+      {
+        Id = cak.Id,
+        GroupName = cak.Group.Name,
+        AccessKey = cak.AccessKey
+      })
+      .ToListAsync();
+
+    return accessKeys;
+  }
+  
+  public async Task<IdentityResult> DeleteAccessKey(AccessKeysData accessKeysIds)
+  {
+    var errorDict = new Dictionary<string, string>();
+    var accessKeys = await _context.CourseAccessKeys
+      .Where(cak => accessKeysIds.AccessKeys.Contains(cak.Id))
+      .ToListAsync();
+
+    var checkResult = ErrorChecker.CheckNullObjects(accessKeys.Select(ak => ("One of the access keys", (object?)ak)));
+    if (!checkResult.Succeeded) return checkResult;
+
+    try
+    {
+      _context.CourseAccessKeys.RemoveRange(accessKeys);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (Exception e)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "deleting access keys");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
 
 }

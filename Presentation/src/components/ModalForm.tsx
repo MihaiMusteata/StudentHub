@@ -17,7 +17,7 @@ interface Rule {
 export interface FieldConfig {
   key: string;
   label: string;
-  type: 'text' | 'select' | 'date' | 'time';
+  type: 'text' | 'select' | 'date' | 'time' | 'multiple-select';
   rules?: Rule[];
   value: string | number | undefined | Dayjs;
   options?: { value: string; label: string }[];
@@ -160,8 +160,9 @@ const ModalForm: FC<ModalFormProps<any>> = ({isModalOpen, setIsModalOpen, fields
                       placeholder={field.label}
                     />
                   )}
-                  {field.type === 'select' && (
+                  {['select', 'multiple-select'].includes(field.type) && (
                     <Select
+                      mode={field.type === 'multiple-select' ? 'multiple' : undefined}
                       style={{height: '50px', fontSize: '16px', width: '100%'}}
                       size='large'
                       placeholder={field.label}

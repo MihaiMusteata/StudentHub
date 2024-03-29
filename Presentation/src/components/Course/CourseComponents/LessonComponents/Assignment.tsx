@@ -1,10 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Item } from './Lesson.tsx';
 import { useEffect, useState } from 'react';
-import { ApiGetRequest } from '../../../scripts/api.tsx';
+import { ApiGetRequest } from "../../../../scripts/api.tsx";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Space, Switch } from 'antd';
 import { format } from 'date-fns';
 import EditIcon from '@mui/icons-material/Edit';
 import EditAssignmentModal from './EditAssignmentModal.tsx';

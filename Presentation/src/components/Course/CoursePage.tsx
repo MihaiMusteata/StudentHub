@@ -1,11 +1,10 @@
 import { Divider } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import AddIcon from '@mui/icons-material/Add';
-import Lesson, { LessonData } from './CourseComponents/Lesson.tsx';
+import Lesson, { LessonData } from './CourseComponents/LessonComponents/Lesson.tsx';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiGetRequest } from '../../scripts/api.tsx';
-import AddNewLessonModal from './CourseComponents/AddNewLessonModal.tsx';
+import AddNewLessonModal from './CourseComponents/LessonComponents/AddNewLessonModal.tsx';
 
 export interface Course {
   id: number,

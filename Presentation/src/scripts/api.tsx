@@ -46,6 +46,9 @@ const API_ENDPOINTS: ApiEndpoints = {
     "courseLessons": (params?: any) => `/api/Course/course-lessons?courseId=${params?.courseId}`,
     "course": (params?: any) => `/api/Course/course?id=${params?.id}`,
     "addCourse": () => `/api/Course/course`,
+    "addAccessKey": () => `/api/Course/access-key`,
+    "deleteAccessKeys": () => `/api/Course/access-keys`,
+    "accessKeys": (params?: any) => `/api/Course/access-keys?courseId=${params?.courseId}`,
     
     // Lesson
     "lessonDocuments": (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,
@@ -64,7 +67,6 @@ const API_ENDPOINTS: ApiEndpoints = {
     // Document
     "uploadDocument": () => `/api/Documents/upload`,
     "downloadDocument": (params?: any) => `/api/Documents/download?id=${params?.documentId}`,
-    
     
 };
 
@@ -109,6 +111,6 @@ export const ApiPutRequest = async (endpoint: string, params?: any, data?: any):
     return apiRequest("PUT", endpoint, params, data);
 };
 
-export const ApiDeleteRequest = async (endpoint: string, params?: any): Promise<ApiResponse> => {
-    return apiRequest("DELETE", endpoint, params);
+export const ApiDeleteRequest = async (endpoint: string, params?: any, data?: any): Promise<ApiResponse> => {
+    return apiRequest("DELETE", endpoint, params, data);
 };

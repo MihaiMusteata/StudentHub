@@ -1,11 +1,11 @@
 import FilePresentIcon from '@mui/icons-material/FilePresent';
 import ClearIcon from '@mui/icons-material/Clear';
-import { ApiDeleteRequest } from '../../../scripts/api.tsx';
+import { ApiDeleteRequest } from '../../../../scripts/api.tsx';
 import { useContext, useState } from 'react';
 import {
   LoadingOutlined, FileWordTwoTone, FilePdfTwoTone, FileExcelTwoTone, FileImageTwoTone, FileTextTwoTone, FileZipTwoTone,
 } from '@ant-design/icons';
-import { ToastContext } from '../../../App.tsx';
+import { ToastContext } from '../../../../App.tsx';
 import { Spin } from 'antd';
 import axios from 'axios';
 import Tooltip from '@mui/material/Tooltip';

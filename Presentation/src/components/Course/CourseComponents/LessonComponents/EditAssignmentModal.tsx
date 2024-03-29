@@ -1,9 +1,9 @@
 import { AssignmentData } from './Assignment.tsx';
 import { FC, useContext, useEffect, useState } from 'react';
-import ModalForm, { FieldConfig as ModalFields } from '../../ModalForm.tsx';
-import { ApiPutRequest, ApiResponse } from '../../../scripts/api.tsx';
+import ModalForm, { FieldConfig as ModalFields } from '../../../ModalForm.tsx';
+import { ApiPutRequest, ApiResponse } from '../../../../scripts/api.tsx';
 import dayjs from 'dayjs';
-import { ToastContext } from '../../../App.tsx';
+import { ToastContext } from '../../../../App.tsx';
 
 interface EditAssignmentModalProps {
   assignment: AssignmentData;

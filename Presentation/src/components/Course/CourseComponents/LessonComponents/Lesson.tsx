@@ -1,14 +1,14 @@
 import { Button, Divider, Spin } from 'antd';
 import LessonDocument from './LessonDocument.tsx';
 import { FC, useContext, useEffect, useState } from 'react';
-import { ApiDeleteRequest, ApiGetRequest, ApiResponse } from '../../../scripts/api.tsx';
+import { ApiDeleteRequest, ApiGetRequest, ApiResponse } from '../../../../scripts/api.tsx';
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import DriveFileRenameOutlineTwoToneIcon from '@mui/icons-material/DriveFileRenameOutlineTwoTone';
 import Tooltip from '@mui/material/Tooltip';
 import { Upload } from 'antd';
 import axios, { AxiosResponse } from 'axios';
-import { ToastContext } from '../../../App.tsx';
+import { ToastContext } from '../../../../App.tsx';
 import EditLessonModal from './EditLessonModal.tsx';
 import LessonAssignment from './LessonAssignment.tsx';
 import AddNewAssignmentModal from './AddNewAssignmentModal.tsx';

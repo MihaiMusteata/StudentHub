@@ -1,8 +1,6 @@
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PersonAddAltTwoToneIcon from '@mui/icons-material/PersonAddAltTwoTone';
 import PersonRemoveTwoToneIcon from '@mui/icons-material/PersonRemoveTwoTone';
-import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
-import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import MenuIcon from '@mui/icons-material/Menu';
 import VpnKeyOffTwoToneIcon from '@mui/icons-material/VpnKeyOffTwoTone';
@@ -16,6 +14,8 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import { Tooltip } from 'antd';
 import AddNewCourseModal from './AddNewCourseModal.tsx';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import AddNewAccessKeyModal from './CourseComponents/AddNewAccessKeyModal.tsx';
+import DeleteAccessKeyModal from './CourseComponents/DeleteAccessKeyModal.tsx';
 
 interface CourseItem extends Course {
   isMenuOpen: boolean;
@@ -24,8 +24,11 @@ interface CourseItem extends Course {
 const Courses = ({fullPage}: { fullPage: boolean }) => {
   const [ teacher, setTeacher ] = useState<any>({});
   const [ courses, setCourses ] = useState<CourseItem[]>([]);
+  const [ course, setCourse ] = useState<Course | undefined>(undefined);
   const [ coursesTrigger, setCoursesTrigger ] = useState<string>('');
-  const [ isModalOpen, setIsModalOpen ] = useState(false);
+  const [ isAddNewCourseModalOpen, setIsAddNewCourseModalOpen ] = useState(false);
+  const [ isAddAccessKeyModalOpen, setIsAddAccessKeyModalOpen ] = useState(false);
+  const [ isDeleteAccessKeyModalOpen, setIsDeleteAccessKeyModalOpen ] = useState(false);
   const {user} = useUser();
   const navigate = useNavigate();
   const fetchTeacher = async () => {
@@ -60,7 +63,17 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
   };
 
   const handleCreate = () => {
-    setIsModalOpen(true);
+    setIsAddNewCourseModalOpen(true);
+  };
+
+  const handleAddAccessKey = (course: CourseItem) => {
+    setCourse(course);
+    setIsAddAccessKeyModalOpen(true);
+  };
+
+  const handleDeleteAccessKey = (course: CourseItem) => {
+    setCourse(course);
+    setIsDeleteAccessKeyModalOpen(true);
   };
 
   const handleView = (course: CourseItem) => {
@@ -86,12 +99,12 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
     {
       icon: <VpnKeyTwoToneIcon className='fs-5 me-2' style={{color: 'green'}} />,
       title: 'Add Access Key',
-      onClick: () => {},
+      onClick: handleAddAccessKey,
     },
     {
       icon: <VpnKeyOffTwoToneIcon className='fs-5 me-2' style={{color: 'red'}} />,
       title: 'Remove Access Key',
-      onClick: () => {},
+      onClick: handleDeleteAccessKey,
     },
   ];
 
@@ -227,11 +240,27 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
         </div>
       </div>
       {
-        isModalOpen &&
+        isAddNewCourseModalOpen &&
         <AddNewCourseModal
-          isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
+          isModalOpen={isAddNewCourseModalOpen}
+          setIsModalOpen={setIsAddNewCourseModalOpen}
           setCoursesTrigger={setCoursesTrigger}
+        />
+      }
+      {
+        isAddAccessKeyModalOpen &&
+        <AddNewAccessKeyModal
+          isModalOpen={isAddAccessKeyModalOpen}
+          setIsModalOpen={setIsAddAccessKeyModalOpen}
+          course={course!}
+        />
+      }
+      {
+        isDeleteAccessKeyModalOpen &&
+        <DeleteAccessKeyModal
+          isModalOpen={isDeleteAccessKeyModalOpen}
+          setIsModalOpen={setIsDeleteAccessKeyModalOpen}
+          course={course!}
         />
       }
     </>

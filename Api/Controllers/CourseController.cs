@@ -34,6 +34,55 @@ public class CourseController : ControllerBase
 
     return BadRequest(errors);
   }
+  
+  [HttpPost("access-key")]
+  public async Task<IActionResult> CreateAccessKey(AccessData accessData)
+  {
+    var result = await _courseService.CreateAccessKey(accessData);
+    if (result.Succeeded)
+    {
+      return Ok("Access Key Created");
+    }
+
+    var errors = new List<string>();
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+  
+  [HttpGet("access-keys")]
+  public async Task<IActionResult> GetCourseAccessKeys(int courseId)
+  {
+    var accessKeys = await _courseService.GetCourseAccessKeys(courseId);
+    return Ok(accessKeys);
+  }
+  
+  [HttpDelete("access-keys")]
+  public async Task<IActionResult> DeleteAccessKey(AccessKeysData accessKeysIds)
+  {
+    var errors = new List<string>();
+    var result = await _courseService.DeleteAccessKey(accessKeysIds);
+    if (result.Succeeded)
+    {
+      return Ok("Access Key Deleted");
+    }
+    
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      errors.Add(result.Errors.First().Description);
+      return NotFound(errors);
+    }
+    
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
 
   [HttpPost("assign-teacher-to-course")]
   public async Task<IActionResult> AssignTeacherToCourse(int courseId, int teacherId)
