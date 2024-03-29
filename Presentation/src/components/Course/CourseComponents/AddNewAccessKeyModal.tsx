@@ -1,5 +1,5 @@
 import { FC, useContext, useEffect, useState } from 'react';
-import ModalForm, { FieldConfig as ModalFields } from '../../ModalForm';
+import ModalForm, { FieldConfig as ModalFields } from '../../AdapterPattern/ModalForm.tsx';
 import { ApiGetRequest, ApiPostRequest, ApiResponse } from '../../../scripts/api.tsx';
 import { ToastContext } from '../../../App.tsx';
 import { Course } from '../CoursePage.tsx';
