@@ -314,6 +314,57 @@ public class StudentsService : IStudentsService
       });
     }
   }
+  
+  public async Task<IdentityResult> UnenrollStudent(int studentId, int courseId)
+  {
+    var errorDict = new Dictionary<string, string>();
+
+    var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == studentId);
+    var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId);
+
+    var objectsToCheck = new List<(string, object?)>
+    {
+      ("Student", student),
+      ("Course", course)
+    };
+
+    var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);
+
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+
+    var enrolledStudent = await _context.EnrolledStudents.FirstOrDefaultAsync(es
+      => es.StudentId == studentId && es.CourseId == courseId);
+
+    if (enrolledStudent == null)
+    {
+      errorDict["general"] = "Student is not enrolled in course";
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "StudentNotEnrolled",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+
+    _context.EnrolledStudents.Remove(enrolledStudent);
+
+    try
+    {
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (DbUpdateException)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "unenrolling student");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
 
   public async Task<List<CourseInformation>> GetStudentCourses(int studentId)
   {

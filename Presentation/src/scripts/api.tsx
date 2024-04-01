@@ -27,6 +27,7 @@ const API_ENDPOINTS: ApiEndpoints = {
     
     // StudentCourse
     "enrollStudent": () => `/api/StudentCourse/enroll`,
+    "unenrollStudent": (params?: any) => `/api/StudentCourse/unenroll?studentId=${params?.studentId}&courseId=${params?.courseId}`,
 
     // Teachers
     "teachers": () => `/api/Teachers/teachers`,

@@ -38,6 +38,29 @@ public class StudentCourseController : ControllerBase
     return BadRequest(errors);
   }
   
+  [HttpDelete("unenroll")]
+  public async Task<IActionResult> UnenrollStudent(int studentId, int courseId)
+  {
+    var errors = new List<string>();
+    var result = await _studentsService.UnenrollStudent(studentId, courseId);
+    if (result.Succeeded)
+    {
+      return Ok("Student Unenrolled");
+    }
+
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      return NotFound(result.Errors.First().Description);
+    }
+    
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+  
   [HttpGet("student-courses")]
   public async Task<IActionResult> GetStudentCourses(int studentId)
   {
