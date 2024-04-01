@@ -186,6 +186,13 @@ public class CourseController : ControllerBase
     var lessons = await _courseService.GetCourseLessons(courseId);
     return Ok(lessons);
   }
+  
+  [HttpGet("search-courses")]
+  public async Task<IActionResult> SearchCourses(string search)
+  {
+    var courses = await _courseService.SearchCourses(search);
+    return Ok(courses);
+  }
 
 
 

@@ -19,10 +19,14 @@ const API_ENDPOINTS: ApiEndpoints = {
 
     // Students
     "students": () => `/api/Students/students`,
-    "student": (params?: any) => `/api/Students/student?id=${params?.studentId}`,
+    "studentById": (params?: any) => `/api/Students/student/id/${params?.studentId}`,
+    "studentByUserId": (params?: any) => `/api/Students/student/user-id/${params?.userId}`,
     "deleteStudent": (params?: any) => `/api/Students/student?id=${params?.studentId}`,
     "updateStudent": () => `/api/Students/student`,
     "addStudent": () => `/api/Students/student`,
+    
+    // StudentCourse
+    "enrollStudent": () => `/api/StudentCourse/enroll`,
 
     // Teachers
     "teachers": () => `/api/Teachers/teachers`,
@@ -42,6 +46,7 @@ const API_ENDPOINTS: ApiEndpoints = {
     
     // Course
     "teacherCourses": (params?: any) => `/api/Course/teacher-courses?teacherId=${params?.teacherId}`,
+    "studentCourses": (params?: any) => `/api/StudentCourse/student-courses?studentId=${params?.studentId}`,
     "enrolledGroups": (params?: any) => `/api/Course/enrolled-groups?courseId=${params?.courseId}`,
     "courseLessons": (params?: any) => `/api/Course/course-lessons?courseId=${params?.courseId}`,
     "course": (params?: any) => `/api/Course/course?id=${params?.id}`,
@@ -53,6 +58,7 @@ const API_ENDPOINTS: ApiEndpoints = {
     "assignTeacherToCourse": (params?: any) => `/api/Course/assign-teacher-to-course?courseId=${params?.courseId}&teacherId=${params?.teacherId}`,
     "removeTeacherFromCourse": (params?: any) => `/api/Course/remove-teacher-from-course?courseId=${params?.courseId}&teacherId=${params?.teacherId}`,
     "courseTeachers": (params?: any) => `/api/Course/course-teachers?courseId=${params?.courseId}`,
+    "searchCourses": (params?: any) => `/api/Course/search-courses?search=${params?.search}`,
     
     // Lesson
     "lessonDocuments": (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,

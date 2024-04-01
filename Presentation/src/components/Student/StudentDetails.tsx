@@ -85,7 +85,7 @@ const StudentDetails = () => {
   const fetchStudent = async () => {
     try {
       if (id) {
-        const result = await ApiGetRequest('student', { studentId: id });
+        const result = await ApiGetRequest('studentById', { studentId: id });
         if (result.status === 200) {
           const st = result.body as Student;
           st.birthDate = format(new Date(st.birthDate), 'yyyy-MM-dd');

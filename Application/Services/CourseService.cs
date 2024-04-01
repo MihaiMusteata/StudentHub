@@ -73,7 +73,7 @@ public class CourseService : ICourseService
       }
       return IdentityResult.Success;
     }
-    catch (Exception e)
+    catch (Exception)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "creating a new course");
       return IdentityResult.Failed(new IdentityError
@@ -130,7 +130,7 @@ public class CourseService : ICourseService
     {
       await _context.SaveChangesAsync();
     }
-    catch (Exception e)
+    catch (Exception)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "creating a new access key");
       return IdentityResult.Failed(new IdentityError
@@ -186,7 +186,7 @@ public class CourseService : ICourseService
       await _context.SaveChangesAsync();
       return IdentityResult.Success;
     }
-    catch (Exception e)
+    catch (Exception)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "adding a teacher to a course");
       return IdentityResult.Failed(new IdentityError
@@ -231,7 +231,7 @@ public class CourseService : ICourseService
       await _context.SaveChangesAsync();
       return IdentityResult.Success;
     }
-    catch (Exception e)
+    catch (Exception)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "removing the teacher from the course");
       return IdentityResult.Failed(new IdentityError
@@ -384,7 +384,7 @@ public class CourseService : ICourseService
       await _context.SaveChangesAsync();
       return IdentityResult.Success;
     }
-    catch (Exception e)
+    catch (Exception)
     {
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "deleting access keys");
       return IdentityResult.Failed(new IdentityError
@@ -393,6 +393,30 @@ public class CourseService : ICourseService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
+  }
+  public async Task<List<CourseInformation>> SearchCourses(string search)
+  {
+    var courses = await _context.Courses
+      .Where(c => (c.Name.ToLower() + " " + c.Code.ToLower()).Contains(search.ToLower()))
+      .Select(c => new CourseInformation
+      {
+        Id = c.Id,
+        Discipline = c.Discipline.Name,
+        Name = c.Name,
+        Description = c.Description,
+        Code = c.Code
+      })
+      .ToListAsync();
+    
+    foreach (var course in courses)
+    {
+      var teachers = await _context.CourseTeachers
+        .Where(ct => ct.CourseId == course.Id)
+        .Select(ct => ct.Teacher.User.FirstName + " " + ct.Teacher.User.LastName)
+        .ToListAsync();
+      course.Teachers = teachers;
+    }
+    return courses;
   }
 
 }

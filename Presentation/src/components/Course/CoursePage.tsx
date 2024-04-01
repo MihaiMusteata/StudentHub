@@ -14,6 +14,7 @@ export interface Course {
   description: string,
   code: string,
   enrolledGroups: string,
+  teachers: string,
 }
 
 const CoursePage = () => {

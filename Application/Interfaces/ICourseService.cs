@@ -17,4 +17,5 @@ public interface ICourseService
   Task<List<LessonData>> GetCourseLessons(int courseId);
   Task<List<AccessKeyData>> GetCourseAccessKeys(int courseId);
   Task<IdentityResult> DeleteAccessKey(AccessKeysData accessKeysIds);
+  Task<List<CourseInformation>> SearchCourses(string search);
 }

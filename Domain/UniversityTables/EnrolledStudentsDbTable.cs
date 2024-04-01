@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.UniversityTables;
 
-public class CourseEnrolledStudentsDbTable
+public class EnrolledStudentsDbTable
 {
   public int Id { get; set; }
   [ForeignKey("CourseId")]

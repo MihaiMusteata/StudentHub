@@ -18,6 +18,8 @@ import AddNewAccessKeyModal from './CourseComponents/AddNewAccessKeyModal.tsx';
 import DeleteAccessKeyModal from './CourseComponents/DeleteAccessKeyModal.tsx';
 import AddTeacherModal from './CourseComponents/AddTeacherModal.tsx';
 import RemoveTeacherModal from './CourseComponents/RemoveTeacherModal.tsx';
+import SearchCourseModal from './SearchCourseModal.tsx';
+import ExitToAppTwoToneIcon from '@mui/icons-material/ExitToAppTwoTone';
 
 interface CourseItem extends Course {
   isMenuOpen: boolean;
@@ -25,10 +27,12 @@ interface CourseItem extends Course {
 
 const Courses = ({fullPage}: { fullPage: boolean }) => {
   const [ teacher, setTeacher ] = useState<any>({});
+  const [ student, setStudent ] = useState<any>({});
   const [ courses, setCourses ] = useState<CourseItem[]>([]);
   const [ course, setCourse ] = useState<Course | undefined>(undefined);
   const [ coursesTrigger, setCoursesTrigger ] = useState<string>('');
   const [ isAddNewCourseModalOpen, setIsAddNewCourseModalOpen ] = useState(false);
+  const [ isSearchCourseModalOpen, setIsSearchCourseModalOpen ] = useState(false);
   const [ isAddAccessKeyModalOpen, setIsAddAccessKeyModalOpen ] = useState(false);
   const [ isDeleteAccessKeyModalOpen, setIsDeleteAccessKeyModalOpen ] = useState(false);
   const [ isAddTeacherModalOpen, setIsAddTeacherModalOpen ] = useState(false);
@@ -37,7 +41,7 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
   const navigate = useNavigate();
   const fetchTeacher = async () => {
     try {
-      const result = await ApiGetRequest('teacherByUserId', {userId: user?.id});
+      const result = await ApiGetRequest('teacherByUserId', {userId: user!.id});
       if (result.status === 200) {
         setTeacher(result.body);
       }
@@ -46,17 +50,36 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
     }
   };
 
+  const fetchStudent = async () => {
+    try {
+      const result = await ApiGetRequest('studentByUserId', {userId: user!.id});
+      if (result.status === 200) {
+        setStudent(result.body);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const fetchCourses = async () => {
     try {
-      const result = await ApiGetRequest('teacherCourses', {teacherId: teacher.id});
+      const result = user!.role === 'Teacher'
+        ? await ApiGetRequest('teacherCourses', {teacherId: teacher.id})
+        : await ApiGetRequest('studentCourses', {studentId: student.id});
+      console.log('Courses:', result);
       if (result.status === 200) {
         result.body.map((course: any) => {
           course.isMenuOpen = false;
-          if (course.enrolledGroups.length === 0) {
-            course.enrolledGroups = 'None';
-            return;
+          if (course.enrolledGroups) {
+            if (course.enrolledGroups.length === 0) {
+              course.enrolledGroups = 'None';
+              return;
+            }
+            course.enrolledGroups = course.enrolledGroups.join(', ');
           }
-          course.enrolledGroups = course.enrolledGroups.join(', ');
+          if (course.teachers) {
+            course.teachers = course.teachers.join(', ');
+          }
         });
         result.body = fullPage ? result.body : result.body.slice(0, 2);
         setCourses(result.body);
@@ -69,6 +92,10 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
   const handleCreate = () => {
     setIsAddNewCourseModalOpen(true);
   };
+  
+  const handleJoin = () => {
+    setIsSearchCourseModalOpen(true);
+  }
 
   const handleAddAccessKey = (course: CourseItem) => {
     setCourse(course);
@@ -100,25 +127,30 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
       title: 'View Course',
       onClick: handleView,
     },
-    {
+    user!.role === 'Teacher' && {
       icon: <PersonAddAltTwoToneIcon className='fs-5 me-2' style={{color: 'green'}} />,
       title: 'Add Teacher',
       onClick: handleAddTeacher,
     },
-    {
+    user!.role === 'Teacher' && {
       icon: <PersonRemoveTwoToneIcon className='fs-5 me-2' style={{color: 'red'}} />,
       title: 'Remove Teacher',
       onClick: handleRemoveTeacher,
     },
-    {
+    user!.role === 'Teacher' && {
       icon: <VpnKeyTwoToneIcon className='fs-5 me-2' style={{color: 'green'}} />,
       title: 'Add Access Key',
       onClick: handleAddAccessKey,
     },
-    {
+    user!.role === 'Teacher' && {
       icon: <VpnKeyOffTwoToneIcon className='fs-5 me-2' style={{color: 'red'}} />,
       title: 'Remove Access Key',
       onClick: handleDeleteAccessKey,
+    },
+    user!.role === 'Student' && {
+      icon: <ExitToAppTwoToneIcon className='fs-5 me-2' style={{color: 'red'}} />,
+      title: 'Leave from course',
+      onClick: handleView,
     },
   ];
 
@@ -128,7 +160,12 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
         <div className='d-flex flex-column'>
           <h6 className='mb-3 text-md'>{course.code + ' ' + course.name}</h6>
           <span className='mb-2 text-sm'>Description: <span className='text-dark font-weight-bold ms-sm-2'>{course.description}</span></span>
-          <span className='mb-2 text-sm'>Enrolled Groups: <span className='text-dark ms-sm-2 font-weight-bold'>{course.enrolledGroups}</span></span>
+          {
+            user!.role === 'Teacher' ?
+              <span className='mb-2 text-sm'>Enrolled Groups: <span className='text-dark ms-sm-2 font-weight-bold'>{course.enrolledGroups}</span></span>
+              :
+              <span className='mb-2 text-sm'>Teachers: <span className='text-dark ms-sm-2 font-weight-bold'>{course.teachers}</span></span>
+          }
           <span className='text-sm'>Discipline: <span className='text-dark ms-sm-2 font-weight-bold'>{course.discipline}</span></span>
         </div>
         <div className='ms-auto text-end d-flex flex-column justify-content-center'>
@@ -150,6 +187,7 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
                         <>
                           <div className='d-flex flex-row'>
                             {menuOptions.map((option, index) => (
+                              option &&
                               <Tooltip key={index} title={option.title} placement='top'>
                                 <div onClick={() => option.onClick(course)}>{option.icon}</div>
                               </Tooltip>
@@ -181,14 +219,14 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
   };
 
   useEffect(() => {
-    fetchTeacher();
-  }, [ user?.id ]);
+    user!.role === 'Teacher' ? fetchTeacher() : fetchStudent();
+  }, [ user!.id ]);
 
   useEffect(() => {
-    if (teacher.id) {
+    if (teacher.id || student.id) {
       fetchCourses();
     }
-  }, [ teacher.id, coursesTrigger ]);
+  }, [ teacher.id, student.id, coursesTrigger ]);
 
   return (
     <>
@@ -217,7 +255,6 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
                     fullPage ?
                       <>
                         {
-                          user?.role === 'Teacher' &&
                           <li
                             className='list-group-item border-1 border-dashed d-flex p-4 mb-4 border-radius-lg '
                             style={{backgroundColor: 'rgba(248,249,250,0.5)'}}
@@ -225,17 +262,32 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
                             <div className='d-flex flex-column opacity-7'>
                               <h6 className='mb-3 text-md'>New Course</h6>
                               <span className='mb-2 text-sm'>Description: <span className='text-dark font-weight-bold ms-sm-2'>None</span></span>
-                              <span className='mb-2 text-sm'>Enrolled Groups: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
+                              {
+                                user!.role === 'Teacher' ?
+                                  <span className='mb-2 text-sm'>Enrolled Groups: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
+                                  :
+                                  <span className='mb-2 text-sm'>Teachers: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
+                              }
                               <span className='text-sm'>Discipline: <span className='text-dark ms-sm-2 font-weight-bold'>None</span></span>
                             </div>
                             <div className='ms-auto text-end d-flex flex-column justify-content-center'>
                               <div className='btn btn-link text-success text-gradient px-3 mb-0'>
-                                <Tooltip title='Create new course' placement='top'>
-                                  <div onClick={handleCreate}>
-                                    <AddBoxIcon className='fs-5 me-1' />
-                                    <span>Create</span>
-                                  </div>
-                                </Tooltip>
+                                {
+                                  user!.role === 'Teacher' ?
+                                    <Tooltip title='Create new course' placement='top'>
+                                      <div onClick={handleCreate}>
+                                        <AddBoxIcon className='fs-5 me-1' />
+                                        <span>Create</span>
+                                      </div>
+                                    </Tooltip>
+                                    :
+                                    <Tooltip title='Create new course' placement='top'>
+                                      <div onClick={handleJoin}>
+                                        <AddBoxIcon className='fs-5 me-1' />
+                                        <span>Join</span>
+                                      </div>
+                                    </Tooltip>
+                                }
                               </div>
                             </div>
                           </li>
@@ -259,7 +311,7 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
         </div>
       </div>
       {
-        user?.role === 'Teacher' &&
+        user!.role === 'Teacher' &&
         <>
           {
             isAddNewCourseModalOpen &&
@@ -301,6 +353,18 @@ const Courses = ({fullPage}: { fullPage: boolean }) => {
               isModalOpen={isRemoveTeacherModalOpen}
               setIsModalOpen={setIsRemoveTeacherModalOpen}
               course={course!}
+            />
+          }
+        </>
+      }
+      {
+        user!.role === 'Student' &&
+        <>
+          {
+            isSearchCourseModalOpen &&
+            <SearchCourseModal
+              isModalOpen={isSearchCourseModalOpen}
+              setIsModalOpen={setIsSearchCourseModalOpen}
             />
           }
         </>

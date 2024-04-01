@@ -20,6 +20,7 @@ import CoursePage from './components/Course/CoursePage.tsx';
 import Courses from './components/Course/Courses.tsx';
 import Assignment from './components/Course/CourseComponents/LessonComponents/Assignment.tsx';
 import UserContext from './context/userContext';
+import SearchedCourses from './components/Course/SearchedCourses.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -129,6 +130,7 @@ function App() {
                             <Route path='/courses' element={<Courses fullPage={true} />} />
                             <Route path='/courses/course' element={<CoursePage />} />
                             <Route path='/courses/assignment' element={<Assignment />} />
+                            <Route path='/courses/search' element={<SearchedCourses />} />
                           </>
                         )}
                         <Route path='*' element={<Navigate to='/dashboard' />} />

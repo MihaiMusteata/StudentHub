@@ -9,7 +9,7 @@ namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Admin")]
+// [Authorize(Roles = "Admin")]
 public class StudentsController : ControllerBase
 {
     private readonly IStudentsService _studentsService;
@@ -31,10 +31,24 @@ public class StudentsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("student")]
-    public async Task<IActionResult> GetStudent(int id)
+    [HttpGet("student/id/{id}")]
+    public async Task<IActionResult> GetStudentById(int id)
     {
-        var result = await _studentsService.GetStudent(id);
+        var result = await _studentsService.GetStudentById(id);
+        if (result is null)
+        {
+            var errorDict = new Dictionary<string, string>();
+            errorDict["general"] = string.Format(ErrorTemplate.ItemNotFound, "Student");
+            return NotFound(new List<string> { JsonSerializer.Serialize(errorDict) });
+        }
+
+        return Ok(result);
+    }
+    
+    [HttpGet("student/user-id/{userId}")]
+    public async Task<IActionResult> GetStudentByUserId(string userId)
+    {
+        var result = await _studentsService.GetStudentByUserId(userId);
         if (result is null)
         {
             var errorDict = new Dictionary<string, string>();

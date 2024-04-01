@@ -10,11 +10,9 @@ namespace Api.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminPanelService _adminPanelService;
-        private readonly IRoleService _roleService;
 
-        public AdminController(IAdminPanelService adminPanelService, IRoleService roleService)
+        public AdminController(IAdminPanelService adminPanelService)
         {
-            _roleService = roleService;
             _adminPanelService = adminPanelService;
         }
 

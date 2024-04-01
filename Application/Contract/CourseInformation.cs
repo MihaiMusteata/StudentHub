@@ -8,4 +8,5 @@ public class CourseInformation
   public string Description { get; set; }
   public string Code { get; set; }
   public List<string> EnrolledGroups { get; set; }
+  public List<string> Teachers { get; set; }
 }
