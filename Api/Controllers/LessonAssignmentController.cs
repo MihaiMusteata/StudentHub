@@ -15,7 +15,7 @@ public class LessonAssignmentController : ControllerBase
   {
     _lessonAssignmentService = lessonAssignmentService;
   }
-  
+
   [HttpPost("assignment")]
   public async Task<IActionResult> CreateLessonAssignment(LessonAssignmentData lessonAssignmentData)
   {
@@ -33,7 +33,7 @@ public class LessonAssignmentController : ControllerBase
 
     return BadRequest(errors);
   }
-  
+
   [HttpGet("assignments/{lessonId}")]
   public async Task<IActionResult> GetLessonAssignments(int lessonId)
   {
@@ -81,7 +81,7 @@ public class LessonAssignmentController : ControllerBase
 
     return BadRequest(errors);
   }
-  
+
   [HttpPut("assignment")]
   public async Task<IActionResult> UpdateLessonAssignment(LessonAssignmentData lessonAssignmentData)
   {
@@ -107,4 +107,42 @@ public class LessonAssignmentController : ControllerBase
     return BadRequest(errors);
   }
 
+  [HttpPost("upload-document/{lessonAssignmentId}")]
+  public async Task<IActionResult> UploadDocument(int lessonAssignmentId, IFormFile file)
+  {
+    var documentData = new DocumentData();
+    using (var ms = new MemoryStream())
+    {
+      file.CopyTo(ms);
+      var fileBytes = ms.ToArray();
+      documentData.Content = Convert.ToBase64String(fileBytes);
+      documentData.Extension = Path.GetExtension(file.FileName);
+      documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
+    }
+    var errors = new List<string>();
+    var result = await _lessonAssignmentService.UploadResource(lessonAssignmentId, documentData);
+    if (result.Succeeded)
+    {
+      return Ok("Resource uploaded successfully");
+    }
+
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      return NotFound(result.Errors.First().Description);
+    }
+
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+
+  [HttpGet("resources/{lessonAssignmentId}")]
+  public async Task<IActionResult> GetResources(int lessonAssignmentId)
+  {
+    var resources = await _lessonAssignmentService.GetResources(lessonAssignmentId);
+    return Ok(resources);
+  }
 }

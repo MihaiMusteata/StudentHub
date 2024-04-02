@@ -412,7 +412,6 @@ public class StudentsService : IStudentsService
     }
 
     var documentExists = await _context.Submissions
-      .Include(lr => lr.Document)
       .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension && lr.StudentId == studentId && lr.LessonAssignmentId == lessonAssignmentId);
     
     if (documentExists)

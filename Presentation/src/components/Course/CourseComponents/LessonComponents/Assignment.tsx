@@ -50,6 +50,7 @@ const Assignment = () => {
   const [ assignment, setAssignment ] = useState<AssignmentData | undefined>(undefined);
   const [ assignmentTrigger, setAssignmentTrigger ] = useState<string>('');
   const [ submissions, setSubmissions ] = useState<Submission[]>([]);
+  const [ resources, setResources ] = useState<Document[]>([]);
   const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const [ student, setStudent ] = useState<any>({});
@@ -83,17 +84,32 @@ const Assignment = () => {
       console.error('Error:', error);
     }
   };
+
+  const fetchResources = async () => {
+    try {
+      const result = await ApiGetRequest('lessonAssignmentResources', {lessonAssignmentId: id});
+      if (result.status === 200) {
+        setResources(result.body);
+        console.log('Resources:', result.body);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const UploadRequest = async (file: any) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append('file', file.file as File);
     try {
-      const result = await ApiUploadDocument('uploadSubmission', formData, {
-        studentId: student?.id,
-        lessonAssignmentId: id,
-      });
+      const result = user!.role === 'Student' ? await ApiUploadDocument('uploadSubmission', formData, {
+          studentId: student?.id,
+          lessonAssignmentId: id,
+        }) :
+        await ApiUploadDocument('uploadAssignmentDocument', formData, {lessonAssignmentId: id});
+
       if (result.status === 200) {
-        await fetchSubmissions();
+        user!.role === 'Student' ? await fetchSubmissions() : await fetchResources();
         setToastComponent({type: 'success', message: 'Document uploaded successfully!'});
       } else {
         result.body = JSON.parse(result.body);
@@ -101,7 +117,6 @@ const Assignment = () => {
       }
       console.log('Result:', result);
     } catch (error) {
-      setIsLoading(false);
       console.error('Error:', error);
     }
     setIsLoading(false);
@@ -141,7 +156,7 @@ const Assignment = () => {
     try {
       const result = await ApiDeleteRequest('deleteDocument', {documentId: documetId});
       if (result.status === 200) {
-        await fetchSubmissions();
+        user!.role === 'Student' ? await fetchSubmissions() : await fetchResources();
         setToastComponent({type: 'success', message: 'Document deleted successfully!'});
       } else {
         result.body = JSON.parse(result.body);
@@ -174,6 +189,10 @@ const Assignment = () => {
     fetchAssignment();
   }, [ assignmentTrigger, submissions.length ]);
 
+  useEffect(() => {
+    fetchResources();
+  }, []);
+
   const renderRow = (index: number, label: string, value: string, backgroundColor: string) => {
     return (
       <tr key={index} style={{backgroundColor: `rgba(0,0,0,${0.05 * (index % 2)})`}}>
@@ -201,11 +220,12 @@ const Assignment = () => {
     {label: 'Allow submission', value: assignment!.allowSubmission ? 'Yes' : 'No'},
   ] : [];
 
-  const listItem = ({documentId, icon, title, time}: {
+  const listItem = ({documentId, icon, title, time, permission}: {
     documentId: number,
     icon: JSX.Element,
     title: string,
-    time: string
+    time?: string,
+    permission?: boolean,
   }) => {
     return (
       <div className='timeline-block mb-3' key={documentId}>
@@ -217,14 +237,17 @@ const Assignment = () => {
             <h6 className='text-dark text-sm font-weight-bold mb-0'>{title}</h6>
             <p className='text-secondary font-weight-bold text-xs mt-1 mb-0'>{time}</p>
           </div>
-          <div className='ms-auto'>
-            <Tooltip title={`Delete ${title}`} placement='top'>
-              <ClearIcon
-                className='cursor-pointer'
-                onClick={() => deleteDocument(documentId)}
-              />
-            </Tooltip>
-          </div>
+          {
+            permission &&
+            <div className='ms-auto'>
+              <Tooltip title={`Delete ${title}`} placement='top'>
+                <ClearIcon
+                  className='cursor-pointer'
+                  onClick={() => deleteDocument(documentId)}
+                />
+              </Tooltip>
+            </div>
+          }
         </div>
       </div>
     );
@@ -246,6 +269,19 @@ const Assignment = () => {
                   <h4 className='text-white text-capitalize mb-0'>{`${assignment.name}`}</h4>
                 </div>
                 <h5 className='text-body font-weight-bolder my-3'>{`Task for ${assignment.name} : ${assignment.task}`}</h5>
+                <div className='timeline timeline-one-side'>
+                  {
+                    user!.role === 'Student' &&
+                    resources.map((resource) => {
+                      return listItem({
+                        documentId: resource.id,
+                        icon: iconMap[resource.extension] || iconMap['default'],
+                        title: resource.name,
+                        permission: false,
+                      });
+                    })
+                  }
+                </div>
               </div>
             </div>
           </div>
@@ -269,7 +305,7 @@ const Assignment = () => {
                     <div className='text-center'>
                       <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
                         <Upload customRequest={UploadRequest} showUploadList={false} className='me-4 mb-3'>
-                          <button className='btn btn-primary mt-4 d-flex justify-content-center align-middle'>
+                          <button className='btn btn-success mt-4 d-flex justify-content-center align-middle'>
                             <UploadFileIcon className='fs-5 me-1' />
                             <span>Add Submission</span>
                           </button>
@@ -281,12 +317,20 @@ const Assignment = () => {
                     user?.role === 'Teacher' &&
                     <div className='text-center d-flex justify-content-center'>
                       <button
-                        className='btn btn-primary mt-4 d-flex align-middle'
+                        className='btn btn-info mt-4 d-flex align-middle me-3'
                         onClick={editAssignment}
                       >
                         <EditIcon className='fs-5 me-1' />
                         <span>Edit</span>
                       </button>
+                      <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
+                        <Upload customRequest={UploadRequest} showUploadList={false} className='me-4 mb-3'>
+                          <button className='btn btn-success mt-4 d-flex justify-content-center align-middle'>
+                            <UploadFileIcon className='fs-5 me-1' />
+                            <span>Add Resources</span>
+                          </button>
+                        </Upload>
+                      </Spin>
                     </div>
                   }
                 </div>
@@ -305,6 +349,18 @@ const Assignment = () => {
                         icon: iconMap[submission.documentData.extension] || iconMap['default'],
                         title: submission.documentData.name,
                         time: format(new Date(submission.submissionDate), 'EEEE, d MMMM yyyy, HH:mm'),
+                        permission: true,
+                      });
+                    })
+                  }
+                  {
+                    user!.role === 'Teacher' &&
+                    resources.map((resource) => {
+                      return listItem({
+                        documentId: resource.id,
+                        icon: iconMap[resource.extension] || iconMap['default'],
+                        title: resource.name,
+                        permission: true,
                       });
                     })
                   }

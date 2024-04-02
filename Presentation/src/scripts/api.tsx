@@ -77,6 +77,8 @@ const API_ENDPOINTS: ApiEndpoints = {
   'deleteLessonAssignment': (params?: any) => `/api/LessonAssignment/assignment?id=${params?.id}`,
   'updateLessonAssignment': () => `/api/LessonAssignment/assignment`,
   'lessonAssignments': (params?: any) => `/api/LessonAssignment/assignments/${params?.lessonId}`,
+  'uploadAssignmentDocument': (params?: any) => `/api/LessonAssignment/upload-document/${params?.lessonAssignmentId}`,
+  'lessonAssignmentResources': (params?: any) => `/api/LessonAssignment/resources/${params?.lessonAssignmentId}`,
 
   // Document
   'uploadDocument': () => `/api/Documents/upload`,

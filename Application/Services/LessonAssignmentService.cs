@@ -149,11 +149,12 @@ public class LessonAssignmentService : ILessonAssignmentService
     {
       return checkResult;
     }
-    
+
     var lessonAssignmentExists = await _context.LessonAssignments.AnyAsync(la
-      => la.Name == lessonAssignmentData.Name && la.CourseLessonId == lessonAssignmentData.LessonId && la.Id != lessonAssignmentData.Id);
-    
-    if(lessonAssignmentExists)
+      => la.Name == lessonAssignmentData.Name && la.CourseLessonId == lessonAssignmentData.LessonId &&
+         la.Id != lessonAssignmentData.Id);
+
+    if (lessonAssignmentExists)
     {
       errorDict["name"] = string.Format(ErrorTemplate.ItemExists, "Lesson assignment with this name");
       return IdentityResult.Failed(new IdentityError
@@ -162,7 +163,7 @@ public class LessonAssignmentService : ILessonAssignmentService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
-    
+
     oldLessonAssignment!.Name = lessonAssignmentData.Name;
     oldLessonAssignment.Task = lessonAssignmentData.Task;
     oldLessonAssignment.AllowSubmission = lessonAssignmentData.AllowSubmission;
@@ -181,5 +182,80 @@ public class LessonAssignmentService : ILessonAssignmentService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
+  }
+  public async Task<IdentityResult> UploadResource(int lessonAssignmentId, DocumentData documentData)
+  {
+    var errorDict = new Dictionary<string, string>();
+
+    var lessonAssignment = await _context.LessonAssignments.FindAsync(lessonAssignmentId);
+
+    var objectsToCheck = new List<(string, object?)>
+    {
+      ("Lesson Assignment", lessonAssignment)
+    };
+
+    var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);
+
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+
+    var resourceExists = await _context.AssignmentResources
+      .AnyAsync(ar => ar.Document.Name == documentData.Name && ar.Document.Extension == documentData.Extension &&
+                      ar.LessonAssignmentId == lessonAssignmentId);
+
+    if (resourceExists)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Resource");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "ResourceExists",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+
+    var newDocument = new DocumentDbTable()
+    {
+      Name = documentData.Name,
+      Extension = documentData.Extension,
+      Content = documentData.Content
+    };
+
+    var newResource = new AssignmentResourceDbTable()
+    {
+      LessonAssignmentId = lessonAssignmentId,
+      Document = newDocument
+    };
+
+    try
+    {
+      await _context.AssignmentResources.AddAsync(newResource);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (DbUpdateException)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading a new resource");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+
+  public async Task<List<DocumentData>> GetResources(int lessonAssignmentId)
+  {
+    var resources = await _context.AssignmentResources
+      .Where(ar => ar.LessonAssignmentId == lessonAssignmentId)
+      .Select(ar => new DocumentData
+      {
+        Id = ar.DocumentId,
+        Name = ar.Document.Name,
+        Extension = ar.Document.Extension,
+      })
+      .ToListAsync();
+    return resources;
   }
 }
