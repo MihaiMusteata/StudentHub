@@ -4,6 +4,7 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(StudentHubContext))]
-    partial class StudentHubContextModelSnapshot : ModelSnapshot
+    [Migration("20240401123705_RenameTableCol")]
+    partial class RenameTableCol
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -438,13 +441,9 @@ namespace Infrastructure.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("SubmissionDate")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("DocumentId")
-                        .IsUnique();
+                    b.HasIndex("DocumentId");
 
                     b.HasIndex("LessonAssignmentId");
 
@@ -889,8 +888,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.UniversityTables.SubmissionDbTable", b =>
                 {
                     b.HasOne("Domain.UniversityTables.DocumentDbTable", "Document")
-                        .WithOne()
-                        .HasForeignKey("Domain.UniversityTables.SubmissionDbTable", "DocumentId")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

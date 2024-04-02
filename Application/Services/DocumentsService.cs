@@ -82,5 +82,38 @@ public class DocumentsService : IDocumentsService
 
     return documents;
   }
+  
+  public async Task<IdentityResult> DeleteDocument(int id)
+  {
+    var errorDict = new Dictionary<string, string>();
+    var documentExists = await _context.Documents.AnyAsync(d => d.Id == id);
+    if (!documentExists)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.ItemNotFound, "Document");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "404",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+    
+    var document = new DocumentDbTable { Id = id };
+
+    try
+    {
+      _context.Entry(document).State = EntityState.Deleted; 
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (Exception e)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "deleting a document");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
 
 }

@@ -314,7 +314,7 @@ public class StudentsService : IStudentsService
       });
     }
   }
-  
+
   public async Task<IdentityResult> UnenrollStudent(int studentId, int courseId)
   {
     var errorDict = new Dictionary<string, string>();
@@ -391,5 +391,88 @@ public class StudentsService : IStudentsService
     return studentCourses;
   }
 
+  public async Task<IdentityResult> UploadSubmission(int studentId, int lessonAssignmentId, DocumentData documentData)
+  {
+    var errorDict = new Dictionary<string, string>();
 
+    var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == studentId);
+    var assignment = await _context.LessonAssignments.FirstOrDefaultAsync(la => la.Id == lessonAssignmentId);
+
+    var objectsToCheck = new List<(string, object?)>
+    {
+      ("Student", student),
+      ("Assignment", assignment)
+    };
+
+    var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);
+
+    if (!checkResult.Succeeded)
+    {
+      return checkResult;
+    }
+
+    var documentExists = await _context.Submissions
+      .Include(lr => lr.Document)
+      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension && lr.StudentId == studentId && lr.LessonAssignmentId == lessonAssignmentId);
+    
+    if (documentExists)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Submission");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "SubmissionExists",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+    
+    var newDocument = new DocumentDbTable
+    {
+      Name = documentData.Name,
+      Content = documentData.Content,
+      Extension = documentData.Extension
+    };
+    
+    var submission = new SubmissionDbTable
+    {
+      StudentId = studentId,
+      LessonAssignmentId = lessonAssignmentId,
+      Document = newDocument,
+      SubmissionDate = DateTime.Now
+    };
+
+    try
+    {
+      await _context.Submissions.AddAsync(submission);
+      await _context.SaveChangesAsync();
+      return IdentityResult.Success;
+    }
+    catch (DbUpdateException)
+    {
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading submission");
+      return IdentityResult.Failed(new IdentityError
+      {
+        Code = "DatabaseUpdateError",
+        Description = JsonSerializer.Serialize(errorDict)
+      });
+    }
+  }
+  
+  public async Task<List<SubmissionData>> GetSubmissions(int studentId, int lessonAssignmentId)
+  {
+    var submissions = await _context.Submissions
+      .Where(s => s.StudentId == studentId && s.LessonAssignmentId == lessonAssignmentId)
+      .Select(s => new SubmissionData
+      {
+        Id = s.Id,
+        DocumentData = new DocumentData
+        {
+          Id = s.Document.Id,
+          Name = s.Document.Name,
+          Extension = s.Document.Extension
+        },
+        SubmissionDate = s.SubmissionDate
+      })
+      .ToListAsync();
+    return submissions;
+  }
 }

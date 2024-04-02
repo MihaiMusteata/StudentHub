@@ -67,4 +67,43 @@ public class StudentCourseController : ControllerBase
     var courses = await _studentsService.GetStudentCourses(studentId);
     return Ok(courses);
   }
+  
+  [HttpPost("upload-submission/{studentId}/{courseLessonId}")]
+  public async Task<IActionResult> UploadSubmission(int studentId, int courseLessonId, IFormFile file)
+  {
+    var documentData = new DocumentData();
+    using (var ms = new MemoryStream())
+    {
+      file.CopyTo(ms);
+      var fileBytes = ms.ToArray();
+      documentData.Content = Convert.ToBase64String(fileBytes);
+      documentData.Extension = Path.GetExtension(file.FileName);
+      documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
+    }
+    var errors = new List<string>();
+    var result = await _studentsService.UploadSubmission(studentId, courseLessonId, documentData);
+    if (result.Succeeded)
+    {
+      return Ok("Submission uploaded successfully");
+    }
+
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      return NotFound(result.Errors.First().Description);
+    }
+    
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
+  
+  [HttpGet("submissions")]
+  public async Task<IActionResult> GetSubmissions(int studentId, int lessonAssignmentId)
+  {
+    var submissions = await _studentsService.GetSubmissions(studentId, lessonAssignmentId);
+    return Ok(submissions);
+  }
 }

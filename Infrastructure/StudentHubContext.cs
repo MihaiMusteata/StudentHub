@@ -38,5 +38,11 @@ public class StudentHubContext : IdentityDbContext<User>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<SubmissionDbTable>()
+            .HasOne(s => s.Document)
+            .WithOne()
+            .HasForeignKey<SubmissionDbTable>(s => s.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

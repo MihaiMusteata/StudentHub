@@ -1,40 +1,17 @@
 import { Button, Divider, Spin } from 'antd';
 import LessonDocument from './LessonDocument.tsx';
 import { FC, useContext, useEffect, useState } from 'react';
-import { ApiDeleteRequest, ApiGetRequest, ApiResponse } from '../../../../scripts/api.tsx';
+import { ApiDeleteRequest, ApiGetRequest, ApiUploadDocument } from '../../../../scripts/api.tsx';
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import DriveFileRenameOutlineTwoToneIcon from '@mui/icons-material/DriveFileRenameOutlineTwoTone';
 import Tooltip from '@mui/material/Tooltip';
 import { Upload } from 'antd';
-import axios, { AxiosResponse } from 'axios';
 import { ToastContext } from '../../../../App.tsx';
 import EditLessonModal from './EditLessonModal.tsx';
 import LessonAssignment from './LessonAssignment.tsx';
 import AddNewAssignmentModal from './AddNewAssignmentModal.tsx';
 import { useUser } from '../../../../context/userContext.tsx';
-
-const apiUploadDocument = async (lessonId: number, formData: FormData) => {
-  try {
-    const url = `/api/Lesson/upload-document/${lessonId}`;
-
-    const response: AxiosResponse<ApiResponse> = await axios.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Accept': 'application/json',
-      },
-    });
-    return {status: response.status, body: response.data};
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error;
-      console.log('Axios Error:', axiosError);
-      return {status: axiosError.response?.status || 400, body: axiosError.response?.data};
-    } else {
-      return {status: 400, body: 'Unknown error'};
-    }
-  }
-};
 
 export interface LessonData extends Item {
   courseId: number;
@@ -45,7 +22,7 @@ export interface Item {
   id: number;
 }
 
-interface Document extends Item {
+export interface Document extends Item {
   extension: string;
 }
 
@@ -71,7 +48,7 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
     const formData = new FormData();
     formData.append('file', file.file as File);
     try {
-      const result = await apiUploadDocument(lesson.id, formData);
+      const result = await ApiUploadDocument("uploadLessonDocument",formData, {lessonId: lesson.id});
       if (result.status === 200) {
         setToastComponent({type: 'success', message: 'Document uploaded successfully!'});
         setDocumentTrigger(`Document ${documents.length + 1} uploaded`);

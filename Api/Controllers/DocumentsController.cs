@@ -73,4 +73,27 @@ public class DocumentsController : ControllerBase
 
     return Ok(result);
   }
+  
+  [HttpDelete("document")]
+  public async Task<IActionResult> DeleteDocument(int id)
+  {
+    var errors = new List<string>();
+    var result = await _documentsService.DeleteDocument(id);
+    if (result.Succeeded)
+    {
+      return Ok("Document deleted successfully");
+    }
+
+    if (result.Errors.Any(e => e.Code == "404"))
+    {
+      return NotFound(result.Errors.First().Description);
+    }
+    
+    foreach (var error in result.Errors)
+    {
+      errors.Add(error.Description);
+    }
+
+    return BadRequest(errors);
+  }
 }

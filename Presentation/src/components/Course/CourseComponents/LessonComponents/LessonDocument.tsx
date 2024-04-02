@@ -11,7 +11,7 @@ import axios from 'axios';
 import Tooltip from '@mui/material/Tooltip';
 import { useUser } from '../../../../context/userContext.tsx';
 
-const iconMap: { [key: string]: JSX.Element } = {
+export const iconMap: { [key: string]: JSX.Element } = {
   '.docx': <FileWordTwoTone twoToneColor='#0055ff' style={{fontSize: '20px'}} />,
   '.txt': <FileTextTwoTone twoToneColor='#798777' style={{fontSize: '20px'}} />,
   '.pdf': <FilePdfTwoTone twoToneColor='red' style={{fontSize: '20px'}} />,
@@ -19,6 +19,7 @@ const iconMap: { [key: string]: JSX.Element } = {
   '.xlsx': <FileExcelTwoTone twoToneColor='#00a300' style={{fontSize: '20px'}} />,
   '.csv': <FileExcelTwoTone twoToneColor='green' style={{fontSize: '20px'}} />,
   '.png': <FileImageTwoTone twoToneColor='#886cc4' style={{fontSize: '20px'}} />,
+  '.avif': <FileImageTwoTone twoToneColor='#886cc4' style={{fontSize: '20px'}} />,
   '.jpg': <FileImageTwoTone twoToneColor='#886cc4' style={{fontSize: '20px'}} />,
   '.jpeg': <FileImageTwoTone twoToneColor='#886cc4' style={{fontSize: '20px'}} />,
   '.zip': <FileZipTwoTone twoToneColor='orange' style={{fontSize: '20px'}} />,
