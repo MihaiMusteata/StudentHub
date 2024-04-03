@@ -17,7 +17,6 @@ const EditAssignmentModal: FC<EditAssignmentModalProps> = ({assignment, isModalO
   const [ response, setResponse ] = useState<ApiResponse | undefined>(undefined);
   const setToastComponent = useContext(ToastContext);
   useEffect(() => {
-    console.log('Time:', dayjs(assignment.dueDate).format('HH:mm'));
     setModalFields([
       {
         key: 'name',

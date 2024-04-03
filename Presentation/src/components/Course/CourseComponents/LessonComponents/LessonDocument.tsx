@@ -1,6 +1,6 @@
 import FilePresentIcon from '@mui/icons-material/FilePresent';
 import ClearIcon from '@mui/icons-material/Clear';
-import { ApiDeleteRequest } from '../../../../scripts/api.tsx';
+import { ApiDeleteRequest, ApiDownloadDocument } from '../../../../scripts/api.tsx';
 import { useContext, useState } from 'react';
 import {
   LoadingOutlined, FileWordTwoTone, FilePdfTwoTone, FileExcelTwoTone, FileImageTwoTone, FileTextTwoTone, FileZipTwoTone,
@@ -42,17 +42,7 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
   const downloadDocument = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`/api/Documents/download?id=${documentId}`, {
-        responseType: 'blob',
-      });
-
-      const url = window.URL.createObjectURL(new Blob([ response.data ]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${name}${extension}`);
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
+      await ApiDownloadDocument(name, extension, 'downloadDocument', {documentId});
       setIsLoading(false);
     } catch (error) {
       console.error('Error downloading document:', error);
@@ -60,6 +50,22 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
       setIsLoading(false);
     }
   };
+  
+  const downloadFile = ({resource}) =>{
+    axios
+    .get(`/api/Documents/download?id=${resource}`, {
+      onDownloadProgress: (progressEvent) => {
+        let percentCompleted = Math.floor((progressEvent.loaded * 100) / progressEvent.total);
+        console.log(percentCompleted,"%");
+      },
+    })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  }
 
   const deleteDocument = async () => {
     setIsLoading(true);
@@ -81,7 +87,7 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
   return (
     <Spin spinning={isLoading} indicator={<></>}>
       <div className='col-12 text-dark d-flex align-items-center mb-3'>
-        <div className='d-flex cursor-pointer' onClick={downloadDocument}>
+        <div className='d-flex cursor-pointer' onClick={()=>downloadFile({resource: documentId})}>
           {
             iconMap[extension] || iconMap['default']
           }

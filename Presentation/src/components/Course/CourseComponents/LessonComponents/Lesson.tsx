@@ -10,7 +10,7 @@ import { Upload } from 'antd';
 import { ToastContext } from '../../../../App.tsx';
 import EditLessonModal from './EditLessonModal.tsx';
 import LessonAssignment from './LessonAssignment.tsx';
-import AddNewAssignmentModal from './AddNewAssignmentModal.tsx';
+import AddNewAssignmentModal from '../AssignmentComponents/AddNewAssignmentModal.tsx';
 import { useUser } from '../../../../context/userContext.tsx';
 
 export interface LessonData extends Item {
@@ -48,7 +48,7 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
     const formData = new FormData();
     formData.append('file', file.file as File);
     try {
-      const result = await ApiUploadDocument("uploadLessonDocument",formData, {lessonId: lesson.id});
+      const result = await ApiUploadDocument('uploadLessonDocument', formData, {lessonId: lesson.id});
       if (result.status === 200) {
         setToastComponent({type: 'success', message: 'Document uploaded successfully!'});
         setDocumentTrigger(`Document ${documents.length + 1} uploaded`);

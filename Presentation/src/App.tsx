@@ -18,7 +18,7 @@ import AdminDashboard from './components/Dashboard/AdminDashboard.tsx';
 import TeacherDashboard from './components/Dashboard/TeacherDashboard.tsx';
 import CoursePage from './components/Course/CoursePage.tsx';
 import Courses from './components/Course/Courses.tsx';
-import Assignment from './components/Course/CourseComponents/LessonComponents/Assignment.tsx';
+import Assignment from './components/Course/CourseComponents/AssignmentComponents/Assignment.tsx';
 import UserContext from './context/userContext';
 import SearchedCourses from './components/Course/SearchedCourses.tsx';
 

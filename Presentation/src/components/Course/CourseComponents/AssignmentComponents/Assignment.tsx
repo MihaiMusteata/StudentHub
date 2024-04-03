@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Document, Item } from './Lesson.tsx';
+import { Document, Item } from '../LessonComponents/Lesson.tsx';
 import { useContext, useEffect, useState } from 'react';
-import { ApiDeleteRequest, ApiGetRequest, ApiUploadDocument } from '../../../../scripts/api.tsx';
+import { ApiGetRequest, ApiUploadDocument } from '../../../../scripts/api.tsx';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { format } from 'date-fns';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,9 +11,8 @@ import { useUser } from '../../../../context/userContext.tsx';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Spin, Upload } from 'antd';
 import { ToastContext } from '../../../../App.tsx';
-import { iconMap } from './LessonDocument.tsx';
-import Tooltip from '@mui/material/Tooltip';
-import ClearIcon from '@mui/icons-material/Clear';
+import { iconMap } from '../LessonComponents/LessonDocument.tsx';
+import AssignmentDocument from './AssignmentDocument.tsx';
 
 interface Submission extends Item {
   documentData: Document;
@@ -53,6 +52,7 @@ const Assignment = () => {
   const [ resources, setResources ] = useState<Document[]>([]);
   const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const [ documentTrigger, setDocumentTrigger ] = useState<string>('');
   const [ student, setStudent ] = useState<any>({});
   const setToastComponent = useContext(ToastContext);
 
@@ -152,20 +152,6 @@ const Assignment = () => {
     }
   };
 
-  const deleteDocument = async (documetId: number) => {
-    try {
-      const result = await ApiDeleteRequest('deleteDocument', {documentId: documetId});
-      if (result.status === 200) {
-        user!.role === 'Student' ? await fetchSubmissions() : await fetchResources();
-        setToastComponent({type: 'success', message: 'Document deleted successfully!'});
-      } else {
-        result.body = JSON.parse(result.body);
-        setToastComponent({type: 'error', message: 'Document deletion failed! ' + result.body.general});
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
   const editAssignment = () => {
     setIsModalOpen(true);
   };
@@ -177,13 +163,13 @@ const Assignment = () => {
     if (user!.role === 'Student') {
       fetchSubmissions();
     }
-  }, [ student.id ]);
+  }, [ student.id, documentTrigger ]);
 
   useEffect(() => {
     if (user!.role === 'Student') {
       fetchStudent();
     }
-  }, [ user!.id ]);
+  }, []);
 
   useEffect(() => {
     fetchAssignment();
@@ -191,9 +177,9 @@ const Assignment = () => {
 
   useEffect(() => {
     fetchResources();
-  }, []);
+  }, [ documentTrigger ]);
 
-  const renderRow = (index: number, label: string, value: string, backgroundColor: string) => {
+  const renderRow = (index: number, label: string, value: string, backgroundColor?: string) => {
     return (
       <tr key={index} style={{backgroundColor: `rgba(0,0,0,${0.05 * (index % 2)})`}}>
         <td className='fw-bold' style={{color: 'black', width: '25%'}}>{label}</td>
@@ -208,8 +194,15 @@ const Assignment = () => {
       value: submissions.length > 0 ? 'Submitted' : 'Not submitted',
       backgroundColor: submissions.length > 0 ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
     },
-    {label: 'Grading status', value: 'Not graded', backgroundColor: 'rgba(0,0,0,0)'},
-    {label: 'Due date', value: assignment!.dueDate},
+    {
+      label: 'Grading status',
+      value: 'Not graded',
+      backgroundColor: 'rgba(0,0,0,0)',
+    },
+    {
+      label: 'Due date',
+      value: assignment!.dueDate,
+    },
     {
       label: 'Time remaining',
       value: assignment!.timeRemaining,
@@ -217,41 +210,11 @@ const Assignment = () => {
         ? 'rgba(255,0,0,0.1)'
         : submissions.length > 0 ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
     },
-    {label: 'Allow submission', value: assignment!.allowSubmission ? 'Yes' : 'No'},
+    {
+      label: 'Allow submission',
+      value: assignment!.allowSubmission ? 'Yes' : 'No',
+    },
   ] : [];
-
-  const listItem = ({documentId, icon, title, time, permission}: {
-    documentId: number,
-    icon: JSX.Element,
-    title: string,
-    time?: string,
-    permission?: boolean,
-  }) => {
-    return (
-      <div className='timeline-block mb-3' key={documentId}>
-        <span className='timeline-step'>
-          {icon}
-        </span>
-        <div className='d-flex'>
-          <div className='timeline-content'>
-            <h6 className='text-dark text-sm font-weight-bold mb-0'>{title}</h6>
-            <p className='text-secondary font-weight-bold text-xs mt-1 mb-0'>{time}</p>
-          </div>
-          {
-            permission &&
-            <div className='ms-auto'>
-              <Tooltip title={`Delete ${title}`} placement='top'>
-                <ClearIcon
-                  className='cursor-pointer'
-                  onClick={() => deleteDocument(documentId)}
-                />
-              </Tooltip>
-            </div>
-          }
-        </div>
-      </div>
-    );
-  };
 
   return (
     assignment &&
@@ -271,15 +234,18 @@ const Assignment = () => {
                 <h5 className='text-body font-weight-bolder my-3'>{`Task for ${assignment.name} : ${assignment.task}`}</h5>
                 <div className='timeline timeline-one-side'>
                   {
-                    user!.role === 'Student' &&
-                    resources.map((resource) => {
-                      return listItem({
-                        documentId: resource.id,
-                        icon: iconMap[resource.extension] || iconMap['default'],
-                        title: resource.name,
-                        permission: false,
-                      });
-                    })
+                    user!.role === 'Student' && resources.map((resource, index) => (
+                      <div key={index}>
+                        <AssignmentDocument
+                          documentId={resource.id}
+                          icon={iconMap[resource.extension] || iconMap['default']}
+                          extension={resource.extension}
+                          title={resource.name}
+                          permission={false}
+                          setDocumentTrigger={setDocumentTrigger}
+                        />
+                      </div>
+                    ))
                   }
                 </div>
               </div>
@@ -340,29 +306,38 @@ const Assignment = () => {
           <div className='col-lg-6 mb-4'>
             <div className='card h-100'>
               <div className='card-body p-3'>
+                <h5 className='text-body font-weight-normal mb-4'>{user!.role === 'Student'
+                  ? 'Submission Files'
+                  : 'Resources'}</h5>
                 <div className='timeline timeline-one-side'>
                   {
-                    user!.role === 'Student' &&
-                    submissions.map((submission) => {
-                      return listItem({
-                        documentId: submission.documentData.id,
-                        icon: iconMap[submission.documentData.extension] || iconMap['default'],
-                        title: submission.documentData.name,
-                        time: format(new Date(submission.submissionDate), 'EEEE, d MMMM yyyy, HH:mm'),
-                        permission: true,
-                      });
-                    })
+                    user!.role === 'Student' && submissions.map((submission, index) => (
+                      <div key={index}>
+                        <AssignmentDocument
+                          documentId={submission.documentData.id}
+                          icon={iconMap[submission.documentData.extension] || iconMap['default']}
+                          extension={submission.documentData.extension}
+                          title={submission.documentData.name}
+                          time={format(new Date(submission.submissionDate), 'EEEE, d MMMM yyyy, HH:mm')}
+                          permission={true}
+                          setDocumentTrigger={setDocumentTrigger}
+                        />
+                      </div>
+                    ))
                   }
                   {
-                    user!.role === 'Teacher' &&
-                    resources.map((resource) => {
-                      return listItem({
-                        documentId: resource.id,
-                        icon: iconMap[resource.extension] || iconMap['default'],
-                        title: resource.name,
-                        permission: true,
-                      });
-                    })
+                    user!.role === 'Teacher' && resources.map((resource, index) => (
+                      <div key={index}>
+                        <AssignmentDocument
+                          documentId={resource.id}
+                          icon={iconMap[resource.extension] || iconMap['default']}
+                          extension={resource.extension}
+                          title={resource.name}
+                          permission={true}
+                          setDocumentTrigger={setDocumentTrigger}
+                        />
+                      </div>
+                    ))
                   }
                 </div>
               </div>
@@ -371,7 +346,7 @@ const Assignment = () => {
         </div>
       </div>
       {
-        isModalOpen && assignment &&
+        isModalOpen && assignment && user?.role === 'Teacher' &&
         <EditAssignmentModal
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}

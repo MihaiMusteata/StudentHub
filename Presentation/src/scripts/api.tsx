@@ -154,3 +154,21 @@ export const ApiUploadDocument = async (endpoint: string,  formData: FormData, p
     }
   }
 };
+export const ApiDownloadDocument = async (name: string, extension: string, endpoint: string, params?: any) => {
+  try {
+    const url = API_ENDPOINTS[endpoint](params);
+    const response = await axios.get(url, {
+      responseType: 'blob',
+    });
+
+    const download_url = window.URL.createObjectURL(new Blob([ response.data ]));
+    const link = document.createElement('a');
+    link.href = download_url;
+    link.setAttribute('download', `${name}${extension}`);
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(download_url);
+  } catch (error) {
+    console.error('Error downloading document:', error);
+  }
+}
