@@ -2,5 +2,6 @@ namespace Application.Contract;
 
 public class DocumentData: DocumentMinimal
 {
-  public string Content { get; set; }
+  public byte[] Content { get; set; }
+  public string FolderPath { get; set; }
 }

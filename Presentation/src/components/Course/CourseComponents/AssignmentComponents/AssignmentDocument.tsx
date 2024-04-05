@@ -62,7 +62,7 @@ const AssignmentDocument = ({
     >
       <div className='timeline-block mb-3'>
         <div className='d-flex '>
-          <div className='cursor-pointer' onClick={() => downloadDocument({id: documentId, name: title, extension})}>
+          <div className='cursor-pointer' onClick={() => downloadDocument({id: documentId, name: title, extension: extension})}>
           <span className='timeline-step'>
             {icon}
           </span>

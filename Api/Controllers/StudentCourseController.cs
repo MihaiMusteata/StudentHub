@@ -76,7 +76,7 @@ public class StudentCourseController : ControllerBase
     {
       file.CopyTo(ms);
       var fileBytes = ms.ToArray();
-      documentData.Content = Convert.ToBase64String(fileBytes);
+      documentData.Content = ms.ToArray();
       documentData.Extension = Path.GetExtension(file.FileName);
       documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
     }

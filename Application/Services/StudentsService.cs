@@ -7,8 +7,11 @@ using Application.Resources;
 using AutoMapper;
 using Domain.UniversityTables;
 using Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
@@ -17,12 +20,24 @@ public class StudentsService : IStudentsService
   private readonly IdentityUserManager _userManager;
   private readonly StudentHubContext _context;
   private readonly IMapper _mapper;
+  private readonly ILogger<StudentsService> _logger;
+  private readonly IConfiguration _configuration;
+  private readonly IWebHostEnvironment _env;
 
-  public StudentsService(IdentityUserManager userManager, StudentHubContext context, IMapper mapper)
+  public StudentsService(
+    IdentityUserManager userManager,
+    StudentHubContext context,
+    IMapper mapper,
+    ILogger<StudentsService> logger,
+    IConfiguration configuration,
+    IWebHostEnvironment env)
   {
     _userManager = userManager;
     _context = context;
     _mapper = mapper;
+    _logger = logger;
+    _configuration = configuration;
+    _env = env;
   }
 
   public async Task<List<Student>> GetStudents()
@@ -406,47 +421,88 @@ public class StudentsService : IStudentsService
 
     var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);
 
+    _logger.LogInformation("Checking if student and assignment exist in the database");
     if (!checkResult.Succeeded)
     {
+      _logger.LogError("Student or assignment does not found in the database");
       return checkResult;
     }
+    _logger.LogInformation("Student and assignment found in the database");
 
-    var documentExists = await _context.Submissions
-      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension && lr.StudentId == studentId && lr.LessonAssignmentId == lessonAssignmentId);
-    
-    if (documentExists)
-    {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Submission");
-      return IdentityResult.Failed(new IdentityError
+    var existingDocument = await _context.Submissions
+      .Where(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension &&
+                   lr.StudentId == studentId && lr.LessonAssignmentId == lessonAssignmentId)
+      .Select(lr => new DocumentData
       {
-        Code = "SubmissionExists",
-        Description = JsonSerializer.Serialize(errorDict)
-      });
+        Id = lr.Document.Id,
+        Name = lr.Document.Name,
+        Extension = lr.Document.Extension
+      })
+      .FirstOrDefaultAsync();
+
+    _logger.LogInformation("Checking if the submission exists in the database");
+    if (existingDocument is not null)
+    {
+      _logger.LogInformation("Submission found in the database");
+      documentData.FolderPath = Path.Combine(_env.ContentRootPath,
+        _configuration["UploadsFolder"]!,
+        existingDocument.Id.ToString());
+      _logger.LogInformation("Checking if the folder exists");
+      if (Directory.Exists(documentData.FolderPath))
+      {
+        _logger.LogInformation("Folder exists");
+        _logger.LogError("Returning error : Upload failed. Submission already exists");
+        errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Submission");
+        return IdentityResult.Failed(new IdentityError
+        {
+          Code = "SubmissionExists",
+          Description = JsonSerializer.Serialize(errorDict)
+        });
+      }
     }
-    
-    var newDocument = new DocumentDbTable
-    {
-      Name = documentData.Name,
-      Content = documentData.Content,
-      Extension = documentData.Extension
-    };
-    
-    var submission = new SubmissionDbTable
-    {
-      StudentId = studentId,
-      LessonAssignmentId = lessonAssignmentId,
-      Document = newDocument,
-      SubmissionDate = DateTime.Now
-    };
 
     try
     {
-      await _context.Submissions.AddAsync(submission);
-      await _context.SaveChangesAsync();
+      _logger.LogInformation("Trying to upload the submission");
+      if (existingDocument is null)
+      {
+        _logger.LogInformation("Submission does not exist in the database. Creating a new submission");
+        var newSubmission = new SubmissionDbTable
+        {
+          StudentId = studentId,
+          LessonAssignmentId = lessonAssignmentId,
+          Document = new DocumentDbTable
+          {
+            Name = documentData.Name,
+            Extension = documentData.Extension
+          },
+          SubmissionDate = DateTime.Now
+        };
+        await _context.Submissions.AddAsync(newSubmission);
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Submission created and saved to the database");
+        documentData.Id = newSubmission.Document.Id;
+        documentData.FolderPath = Path.Combine(_env.ContentRootPath,
+          _configuration["UploadsFolder"]!,
+          documentData.Id.ToString());
+        _logger.LogInformation("Checking if the folder exists");
+        if(Directory.Exists(documentData.FolderPath))
+        {
+          _logger.LogInformation("Folder exists even though the submission wasn't in the database. Deleting the folder.");
+          Directory.Delete(documentData.FolderPath, true);
+        }
+      }
+      
+      _logger.LogInformation("Writing the document to the file system.");
+      Directory.CreateDirectory(documentData.FolderPath);
+      _logger.LogInformation("Folder created: {FolderPath}", documentData.FolderPath);
+      using FileStream stream = new FileStream(Path.Combine(documentData.FolderPath, documentData.Name + documentData.Extension), FileMode.Create);
+      stream.Write(documentData.Content, 0, documentData.Content.Length);
       return IdentityResult.Success;
     }
-    catch (DbUpdateException)
+    catch (Exception e)
     {
+      _logger.LogInformation("Error while uploading the submission: {Error}", e.Message);
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading submission");
       return IdentityResult.Failed(new IdentityError
       {
@@ -455,7 +511,7 @@ public class StudentsService : IStudentsService
       });
     }
   }
-  
+
   public async Task<List<SubmissionData>> GetSubmissions(int studentId, int lessonAssignmentId)
   {
     var submissions = await _context.Submissions

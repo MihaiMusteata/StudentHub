@@ -6,6 +6,7 @@ using Application.Services;
 using Domain.User;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,6 +39,22 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddUserValidator<UserValidator>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<IdentityUserManager>();
+
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = long.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+// limits response size to 3GB for file downloads
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024;
+    serverOptions.Limits.MaxRequestBufferSize = 3L * 1024 * 1024 * 1024;
+});
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -100,6 +117,13 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+
+var directoryName = configuration.GetValue<string>("UploadsFolder");
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), directoryName);
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
 
 var app = builder.Build();
 

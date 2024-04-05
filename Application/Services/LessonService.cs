@@ -5,25 +5,35 @@ using Application.Interfaces;
 using Application.Resources;
 using Domain.UniversityTables;
 using Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
 public class LessonService : ILessonService
 {
   private readonly StudentHubContext _context;
+  private readonly ILogger<LessonService> _logger;
+  private readonly IConfiguration _configuration;
+  private readonly IWebHostEnvironment _env;
 
-  public LessonService(StudentHubContext context)
+  public LessonService(StudentHubContext context, ILogger<LessonService> logger, IConfiguration configuration, IWebHostEnvironment env)
   {
     _context = context;
+    _logger = logger;
+    _configuration = configuration;
+    _env = env;
   }
 
   public async Task<IdentityResult> CreateLesson(LessonData lessonData)
   {
     var errorDict = new Dictionary<string, string>();
 
-    var lessonExists = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId);
+    var lessonExists =
+      await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId);
     if (lessonExists)
     {
       errorDict["name"] = string.Format(ErrorTemplate.ItemExists, "Lesson with this name");
@@ -116,9 +126,10 @@ public class LessonService : ILessonService
     {
       return checkResult;
     }
-    
-    var lesson = await _context.CourseLessons.AnyAsync(l => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId && l.Id != lessonData.Id);
-    if (lesson )
+
+    var lesson = await _context.CourseLessons.AnyAsync(l
+      => l.Name == lessonData.Name && l.CourseId == lessonData.CourseId && l.Id != lessonData.Id);
+    if (lesson)
     {
       errorDict["name"] = string.Format(ErrorTemplate.ItemExists, "Lesson with this name");
       return IdentityResult.Failed(new IdentityError
@@ -127,7 +138,7 @@ public class LessonService : ILessonService
         Description = JsonSerializer.Serialize(errorDict)
       });
     }
-    
+
     oldLesson!.Name = lessonData.Name;
 
     try
@@ -182,89 +193,94 @@ public class LessonService : ILessonService
   {
     var errorDict = new Dictionary<string, string>();
 
-    var documentExists = await _context.LessonResources
-      .Include(lr => lr.Document)
-      .AnyAsync(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension &&
-                      lr.CourseLessonId == lessonId);
-    if (documentExists)
-    {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document");
-      return IdentityResult.Failed(new IdentityError
-      {
-        Code = "DocumentExists",
-        Description = JsonSerializer.Serialize(errorDict)
-      });
-    }
-
     var lesson = await _context.CourseLessons.FindAsync(lessonId);
+
     var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
     {
       ("Lesson", lesson)
     });
 
+    _logger.LogInformation("Checking if lesson exists in the database");
     if (!checkResult.Succeeded)
     {
+      _logger.LogError("Lesson not found in the database");
       return checkResult;
     }
+    _logger.LogInformation("Lesson found in the database");
 
-    var document = new DocumentDbTable
-    {
-      Name = documentData.Name,
-      Content = documentData.Content,
-      Extension = documentData.Extension
-    };
-
-    var lessonResource = new LessonResourceDbTable
-    {
-      CourseLessonId = lessonId,
-      Document = document
-    };
-
-    try
-    {
-      await _context.LessonResources.AddAsync(lessonResource);
-      await _context.SaveChangesAsync();
-      return IdentityResult.Success;
-    }
-    catch (Exception)
-    {
-      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading a document to a lesson");
-      return IdentityResult.Failed(new IdentityError
+    var existingDocument = await _context.LessonResources
+      .Where(lr => lr.Document.Name == documentData.Name && lr.Document.Extension == documentData.Extension &&
+                   lr.CourseLessonId == lessonId)
+      .Select(lr => new DocumentData
       {
-        Code = "DatabaseUpdateError",
-        Description = JsonSerializer.Serialize(errorDict)
-      });
+        Id = lr.Document.Id,
+        Name = lr.Document.Name,
+        Extension = lr.Document.Extension
+      })
+      .FirstOrDefaultAsync();
+
+    _logger.LogInformation("Checking if the document exists in the database.");
+    if (existingDocument is not null)
+    {
+      _logger.LogInformation("Document found in the database.");
+      documentData.FolderPath = Path.Combine(_env.ContentRootPath,
+        _configuration["UploadsFolder"]!,
+        existingDocument.Id.ToString());
+      _logger.LogInformation("Checking if the folder exists.");
+      if (Directory.Exists(documentData.FolderPath))
+      {
+        _logger.LogInformation("Folder exists.");
+        _logger.LogError("Returning error : Upload failed. Document already exists.");
+        errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Document");
+        return IdentityResult.Failed(new IdentityError
+        {
+          Code = "DocumentExists",
+          Description = JsonSerializer.Serialize(errorDict)
+        });
+      }
     }
-  }
-
-  public async Task<IdentityResult> DeleteDocumentFromLesson(int lessonId, int documentId)
-  {
-    var errorDict = new Dictionary<string, string>();
-
-    var lessonResource = await _context.LessonResources
-      .FirstOrDefaultAsync(lr => lr.CourseLessonId == lessonId && lr.DocumentId == documentId);
-    var document =  new DocumentDbTable {Id = documentId};
     
-    var checkResult = ErrorChecker.CheckNullObjects(new List<(string, object?)>
-    {
-      ("Lesson Resource", lessonResource),
-    });
-
-    if (!checkResult.Succeeded)
-    {
-      return checkResult;
-    }
-
     try
     {
-      _context.LessonResources.Remove(lessonResource!);
-      _context.Entry(document).State = EntityState.Deleted; 
-      await _context.SaveChangesAsync();
+      _logger.LogInformation("Trying to upload the document.");
+      if (existingDocument is null)
+      {
+        _logger.LogInformation("Document does not exist in the database. Creating a new document.");
+        var newDocument = new LessonResourceDbTable
+        {
+          CourseLessonId = lessonId,
+          Document = new DocumentDbTable
+          {
+            Name = documentData.Name,
+            Extension = documentData.Extension,
+          }
+        };
+        await _context.LessonResources.AddAsync(newDocument);
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Document created and saved to the database.");
+        documentData.Id = newDocument.Document.Id;
+        documentData.FolderPath = Path.Combine(_env.ContentRootPath,
+          _configuration["UploadsFolder"]!,
+          documentData.Id.ToString());
+        _logger.LogInformation("Checking if the folder exists.");
+        if (Directory.Exists(documentData.FolderPath))
+        {
+          _logger.LogInformation("Folder exists even though the resource wasn't in the database. Deleting the folder.");
+          Directory.Delete(documentData.FolderPath, true);
+        }
+      }
+      
+      _logger.LogInformation("Writing the document to the file system.");
+      Directory.CreateDirectory(documentData.FolderPath);
+      _logger.LogInformation("Folder created: {FolderPath}", documentData.FolderPath);
+      using FileStream stream = new FileStream(Path.Combine(documentData.FolderPath, documentData.Name + documentData.Extension), FileMode.Create);
+      stream.Write(documentData.Content, 0, documentData.Content.Length);
       return IdentityResult.Success;
     }
-    catch (Exception)
+    catch (Exception e)
     {
-      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "deleting a document from a lesson");
+      _logger.LogInformation("Error while uploading the document: {Error}", e.Message);
+      errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading a document to a lesson");
       return IdentityResult.Failed(new IdentityError
       {
         Code = "DatabaseUpdateError",

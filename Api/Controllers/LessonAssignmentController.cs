@@ -113,9 +113,8 @@ public class LessonAssignmentController : ControllerBase
     var documentData = new DocumentData();
     using (var ms = new MemoryStream())
     {
-      file.CopyTo(ms);
-      var fileBytes = ms.ToArray();
-      documentData.Content = Convert.ToBase64String(fileBytes);
+      await file.CopyToAsync(ms);
+      documentData.Content = ms.ToArray();
       documentData.Extension = Path.GetExtension(file.FileName);
       documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
     }

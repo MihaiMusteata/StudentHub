@@ -65,7 +65,6 @@ const API_ENDPOINTS: ApiEndpoints = {
 
   // Lesson
   'lessonDocuments': (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,
-  'deleteLessonDocument': (params?: any) => `/api/Lesson/document?lessonId=${params?.lessonId}&documentId=${params?.documentId}`,
   'addLesson': () => '/api/Lesson/lesson',
   'deleteLesson': (params?: any) => `/api/Lesson/lesson?id=${params.id}`,
   'updateLesson': () => '/api/Lesson/lesson',

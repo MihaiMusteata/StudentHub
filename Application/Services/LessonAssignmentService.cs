@@ -5,18 +5,27 @@ using Application.Interfaces;
 using Application.Resources;
 using Domain.UniversityTables;
 using Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
 public class LessonAssignmentService : ILessonAssignmentService
 {
   private readonly StudentHubContext _context;
+  private readonly ILogger<LessonAssignmentService> _logger;
+  private readonly IWebHostEnvironment _env;
+  private readonly IConfiguration _configuration;
 
-  public LessonAssignmentService(StudentHubContext context)
+  public LessonAssignmentService(StudentHubContext context, ILogger<LessonAssignmentService> logger, IConfiguration configuration, IWebHostEnvironment env)
   {
     _context = context;
+    _logger = logger;
+    _configuration = configuration;
+    _env = env;
   }
 
   public async Task<IdentityResult> CreateLessonAssignment(LessonAssignmentData lessonAssignmentData)
@@ -188,54 +197,89 @@ public class LessonAssignmentService : ILessonAssignmentService
     var errorDict = new Dictionary<string, string>();
 
     var lessonAssignment = await _context.LessonAssignments.FindAsync(lessonAssignmentId);
-
+    
     var objectsToCheck = new List<(string, object?)>
     {
       ("Lesson Assignment", lessonAssignment)
     };
-
     var checkResult = ErrorChecker.CheckNullObjects(objectsToCheck);
 
+    _logger.LogInformation("Checking if lesson assignment exists in the database");
     if (!checkResult.Succeeded)
     {
+      _logger.LogError("Lesson assignment not found in the database");
       return checkResult;
     }
-
-    var resourceExists = await _context.AssignmentResources
-      .AnyAsync(ar => ar.Document.Name == documentData.Name && ar.Document.Extension == documentData.Extension &&
-                      ar.LessonAssignmentId == lessonAssignmentId);
-
-    if (resourceExists)
+    _logger.LogInformation("Lesson assignment found in the database");
+    
+    var existingResource = await _context.AssignmentResources
+      .Where(ar => ar.Document.Name == documentData.Name && ar.Document.Extension == documentData.Extension &&
+                   ar.LessonAssignmentId == lessonAssignmentId)
+      .Select(ar => new DocumentData
+        {
+          Id = ar.Document.Id,
+          Name = ar.Document.Name,
+          Extension = ar.Document.Extension,
+        })
+      .FirstOrDefaultAsync();
+    
+    _logger.LogInformation("Checking if resource exists in the database");
+    if (existingResource is not null)
     {
-      errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Resource");
-      return IdentityResult.Failed(new IdentityError
+      _logger.LogInformation("Resource exists in the database");
+      documentData.FolderPath = Path.Combine(_env.ContentRootPath, _configuration["UploadsFolder"]!, existingResource.Id.ToString());
+      _logger.LogInformation("Checking if the folder exists");
+      if (Directory.Exists(documentData.FolderPath))
       {
-        Code = "ResourceExists",
-        Description = JsonSerializer.Serialize(errorDict)
-      });
+        _logger.LogInformation("Folder exists");
+        _logger.LogInformation("Returning error : Upload failed. Resource already exists.");
+        errorDict["general"] = string.Format(ErrorTemplate.ItemExists, "Resource");
+        return IdentityResult.Failed(new IdentityError
+        {
+          Code = "ResourceExists",
+          Description = JsonSerializer.Serialize(errorDict)
+        });
+      }
     }
-
-    var newDocument = new DocumentDbTable()
-    {
-      Name = documentData.Name,
-      Extension = documentData.Extension,
-      Content = documentData.Content
-    };
-
-    var newResource = new AssignmentResourceDbTable()
-    {
-      LessonAssignmentId = lessonAssignmentId,
-      Document = newDocument
-    };
 
     try
     {
-      await _context.AssignmentResources.AddAsync(newResource);
-      await _context.SaveChangesAsync();
+      _logger.LogInformation("Trying to upload the resource.");
+      if(existingResource is null)
+      {
+        _logger.LogInformation("Resource does not exist in the database. Creating a new resource.");
+        var newResource = new AssignmentResourceDbTable
+        {
+          LessonAssignmentId = lessonAssignmentId,
+          Document = new DocumentDbTable
+          {
+            Name = documentData.Name,
+            Extension = documentData.Extension,
+          }
+        };
+        await _context.AssignmentResources.AddAsync(newResource);
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Resource created and saved to the database.");
+        documentData.Id = newResource.Document.Id;
+        documentData.FolderPath = Path.Combine(_env.ContentRootPath, _configuration["UploadsFolder"]!, documentData.Id.ToString());
+        _logger.LogInformation("Checking if the folder exists.");
+        if (Directory.Exists(documentData.FolderPath))
+        {
+          _logger.LogInformation("Folder exists even though the resource wasn't in the database. Deleting the folder.");
+          Directory.Delete(documentData.FolderPath, true);
+        }
+      }
+      
+      _logger.LogInformation("Writing the document to the file system.");
+      Directory.CreateDirectory(documentData.FolderPath);
+      _logger.LogInformation("Folder created: {FolderPath}", documentData.FolderPath);
+      using FileStream stream = new FileStream(Path.Combine(documentData.FolderPath, documentData.Name + documentData.Extension), FileMode.Create);
+      stream.Write(documentData.Content, 0, documentData.Content.Length);
       return IdentityResult.Success;
     }
-    catch (DbUpdateException)
+    catch (Exception e)
     {
+      _logger.LogError("Error uploading the resource: {e}", e.Message);
       errorDict["general"] = string.Format(ErrorTemplate.DatabaseUpdateError, "uploading a new resource");
       return IdentityResult.Failed(new IdentityError
       {
@@ -244,7 +288,6 @@ public class LessonAssignmentService : ILessonAssignmentService
       });
     }
   }
-
   public async Task<List<DocumentData>> GetResources(int lessonAssignmentId)
   {
     var resources = await _context.AssignmentResources

@@ -29,29 +29,17 @@ export const iconMap: { [key: string]: JSX.Element } = {
 
 export interface LessonDocumentProps {
   setDocumentTrigger: (documentTrigger: string) => void;
-  lessonId: number;
   name: string;
   extension: string;
   documentId: number;
 }
 
-const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, documentId}: LessonDocumentProps) => {
+const LessonDocument = ({setDocumentTrigger, name, extension, documentId}: LessonDocumentProps) => {
   const setToastComponent = useContext(ToastContext);
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const {user} = useUser();
-  const downloadDocument = async () => {
-    setIsLoading(true);
-    try {
-      await ApiDownloadDocument(name, extension, 'downloadDocument', {documentId});
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error downloading document:', error);
-      setToastComponent({type: 'error', message: 'Document download failed!'});
-      setIsLoading(false);
-    }
-  };
   
-  const downloadFile = ({resource}) =>{
+  const downloadFile = (resource: number) =>{
     axios
     .get(`/api/Documents/download?id=${resource}`, {
       onDownloadProgress: (progressEvent) => {
@@ -70,7 +58,7 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
   const deleteDocument = async () => {
     setIsLoading(true);
     try {
-      const result = await ApiDeleteRequest('deleteLessonDocument', {lessonId, documentId});
+      const result = await ApiDeleteRequest('deleteDocument', {documentId: documentId});
       if (result.status === 200) {
         setToastComponent({type: 'success', message: 'Document deleted successfully!'});
         setDocumentTrigger(`Document ${documentId} deleted`);
@@ -87,7 +75,7 @@ const LessonDocument = ({setDocumentTrigger, lessonId, name, extension, document
   return (
     <Spin spinning={isLoading} indicator={<></>}>
       <div className='col-12 text-dark d-flex align-items-center mb-3'>
-        <div className='d-flex cursor-pointer' onClick={()=>downloadFile({resource: documentId})}>
+        <div className='d-flex cursor-pointer' onClick={()=>downloadFile(documentId)}>
           {
             iconMap[extension] || iconMap['default']
           }

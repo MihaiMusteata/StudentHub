@@ -15,3 +15,5 @@ bld/
 /.vs
 */node_modules
 */appsettings.Development.json
+
+Uploads/

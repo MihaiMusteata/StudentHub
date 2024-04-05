@@ -8,7 +8,6 @@ import AddNewLessonModal from './CourseComponents/LessonComponents/AddNewLessonM
 import { useUser } from '../../context/userContext.tsx';
 import GroupsTwoToneIcon from '@mui/icons-material/GroupsTwoTone';
 
-
 export interface Course {
   id: number,
   discipline: string
@@ -104,18 +103,21 @@ const CoursePage = () => {
                   <ul className='list-group'>
                     <li className='list-group-item border-0 p-4 mb-4 bg-gray-100 border-radius-lg'>
                       <div className='d-flex cursor-pointer'>
-                        <GroupsTwoToneIcon style={{color:'teal'}} />
+                        <GroupsTwoToneIcon style={{color: 'teal'}} />
                         <h6 className='font-weight-normal m-0 ms-2 text-start'> Attendances</h6>
                       </div>
                     </li>
                     {
                       lessons.map((lesson, index) => {
-                        return <Lesson
-                          key={index}
-                          lesson={{id: lesson.id, name: lesson.name, courseId: id}}
-                          onDeleteLesson={handleDeleteLesson}
-                          onEditLesson={handleEditLesson}
-                        />;
+                        return (
+                          <li key={index} className='list-group-item border-0 p-4 mb-4 bg-gray-100 border-radius-lg'>
+                            <Lesson
+                              lesson={{id: lesson.id, name: lesson.name, courseId: id}}
+                              onDeleteLesson={handleDeleteLesson}
+                              onEditLesson={handleEditLesson}
+                            />
+                          </li>
+                        );
                       })
                     }
                   </ul>

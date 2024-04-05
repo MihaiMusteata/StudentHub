@@ -2,6 +2,7 @@ using System.Text.Json;
 using Application.Contract;
 using Application.Interfaces;
 using Application.Resources;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -21,16 +22,16 @@ public class DocumentsController : ControllerBase
   {
     var errors = new List<string>();
     var documentData = new DocumentData();
+
     using (var ms = new MemoryStream())
     {
-      file.CopyTo(ms);
-      var fileBytes = ms.ToArray();
-      documentData.Content = Convert.ToBase64String(fileBytes);
+      await file.CopyToAsync(ms);
+      documentData.Content = ms.ToArray();
       documentData.Extension = Path.GetExtension(file.FileName);
       documentData.Name = Path.GetFileNameWithoutExtension(file.FileName);
     }
 
-    var result = await _documentsService.CreateDocument(documentData);
+    var result = await _documentsService.UploadDocument(documentData);
     if (result.Succeeded)
     {
       return Ok("Document uploaded successfully");
@@ -58,7 +59,7 @@ public class DocumentsController : ControllerBase
       });
     }
 
-    var fileBytes = Convert.FromBase64String(result.Content);
+    var fileBytes = result.Content;
     return File(fileBytes, "application/octet-stream", result.Name + result.Extension);
   }
 
@@ -73,7 +74,7 @@ public class DocumentsController : ControllerBase
 
     return Ok(result);
   }
-  
+
   [HttpDelete("document")]
   public async Task<IActionResult> DeleteDocument(int id)
   {
@@ -88,7 +89,7 @@ public class DocumentsController : ControllerBase
     {
       return NotFound(result.Errors.First().Description);
     }
-    
+
     foreach (var error in result.Errors)
     {
       errors.Add(error.Description);
@@ -96,4 +97,5 @@ public class DocumentsController : ControllerBase
 
     return BadRequest(errors);
   }
+  
 }
