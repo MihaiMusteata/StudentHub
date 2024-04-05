@@ -6,6 +6,7 @@ import { useContext, useState } from 'react';
 import { ApiDeleteRequest, ApiDownloadDocument } from '../../../../scripts/api.tsx';
 import { Document } from '../LessonComponents/Lesson.tsx';
 import { ToastContext } from '../../../../App.tsx';
+import { ProgressBar } from '../../../../scripts/linear-progress.tsx';
 
 interface AssignmentDocumentProps {
   documentId: number;
@@ -27,6 +28,7 @@ const AssignmentDocument = ({
   setDocumentTrigger,
 }: AssignmentDocumentProps) => {
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const [ progress, setProgress ] = useState<number>(-1);
   const setToastComponent = useContext(ToastContext);
   const deleteDocument = async (documetId: number) => {
     try {
@@ -44,47 +46,51 @@ const AssignmentDocument = ({
   };
 
   const downloadDocument = async (document: Document) => {
-    setIsLoading(true);
-    try {
-      console.log('Document:', document);
-      await ApiDownloadDocument(document.name, document.extension, 'downloadDocument', {documentId: document.id});
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error downloading document:', error);
-      setToastComponent({type: 'error', message: 'Document download failed!'});
-      setIsLoading(false);
-    }
+    await ApiDownloadDocument(document.name, document.extension, 'downloadDocument', setProgress, setIsLoading, setToastComponent, {documentId: document.id});
   };
   return (
-    <Spin
-      spinning={isLoading}
-      indicator={<LoadingOutlined />}
-    >
-      <div className='timeline-block mb-3'>
-        <div className='d-flex '>
-          <div className='cursor-pointer' onClick={() => downloadDocument({id: documentId, name: title, extension: extension})}>
-          <span className='timeline-step'>
-            {icon}
-          </span>
-            <div className='timeline-content'>
-              <h6 className='text-dark text-sm font-weight-bold mb-0'>{title}</h6>
-              <p className='text-secondary font-weight-bold text-xs mt-1 mb-0'>{time}</p>
+    <>
+      <Spin
+        spinning={isLoading}
+        indicator={<LoadingOutlined />}
+      >
+        <div className='timeline-block mb-0'>
+          <div className='d-flex '>
+            <div
+              className='cursor-pointer'
+              onClick={() => downloadDocument({id: documentId, name: title, extension: extension})}
+            >
+              <span className='timeline-step'>
+                {icon}
+              </span>
+              <div className='timeline-content'>
+                <h6 className='text-dark text-sm font-weight-bold mb-0'>{title}</h6>
+                {
+                  time &&
+                  <p className='text-secondary font-weight-bold text-xs mt-1 mb-0'>{time}</p>
+                }
+              </div>
             </div>
+            {
+              permission &&
+              <div className='ms-auto'>
+                <Tooltip title={`Delete ${title}`} placement='top'>
+                  <ClearIcon
+                    className='cursor-pointer'
+                    onClick={() => deleteDocument(documentId)}
+                  />
+                </Tooltip>
+              </div>
+            }
           </div>
-          {
-            permission &&
-            <div className='ms-auto'>
-              <Tooltip title={`Delete ${title}`} placement='top'>
-                <ClearIcon
-                  className='cursor-pointer'
-                  onClick={() => deleteDocument(documentId)}
-                />
-              </Tooltip>
-            </div>
-          }
+        </div>
+      </Spin>
+      <div className='timeline-block'>
+        <div className='timeline-content'>
+          <ProgressBar progress={progress} />
         </div>
       </div>
-    </Spin>
+    </>
   );
 };
 export default AssignmentDocument;

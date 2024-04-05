@@ -1,4 +1,6 @@
 import axios, { AxiosResponse, Method } from 'axios';
+import { Dispatch, SetStateAction, useContext } from 'react';
+import { ToastContext, toastProps } from '../App.tsx';
 
 interface ApiEndpoints {
   [key: string]: (params?: any) => string;
@@ -69,7 +71,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'deleteLesson': (params?: any) => `/api/Lesson/lesson?id=${params.id}`,
   'updateLesson': () => '/api/Lesson/lesson',
   'uploadLessonDocument': (params?: any) => `/api/Lesson/upload-document/${params?.lessonId}`,
-    
+
   // Lesson Assignment
   'addLessonAssignment': () => `/api/LessonAssignment/assignment`,
   'lessonAssignment': (params?: any) => `/api/LessonAssignment/assignment?id=${params?.id}`,
@@ -131,7 +133,7 @@ export const ApiDeleteRequest = async (endpoint: string, params?: any, data?: an
   return apiRequest('DELETE', endpoint, params, data);
 };
 
-export const ApiUploadDocument = async (endpoint: string,  formData: FormData, params?: any): Promise<ApiResponse> => {
+export const ApiUploadDocument = async (endpoint: string, formData: FormData, params?: any): Promise<ApiResponse> => {
   try {
     const url = API_ENDPOINTS[endpoint](params);
     console.log('URL:', url);
@@ -153,21 +155,49 @@ export const ApiUploadDocument = async (endpoint: string,  formData: FormData, p
     }
   }
 };
-export const ApiDownloadDocument = async (name: string, extension: string, endpoint: string, params?: any) => {
-  try {
-    const url = API_ENDPOINTS[endpoint](params);
-    const response = await axios.get(url, {
-      responseType: 'blob',
-    });
-
-    const download_url = window.URL.createObjectURL(new Blob([ response.data ]));
+export const ApiDownloadDocument = async (
+  name: string,
+  extension: string,
+  endpoint: string,
+  setProgress: (progress: number) => void,
+  setIsLoading: (isLoading: boolean) => void,
+  setToastComponent: Dispatch<SetStateAction<toastProps | undefined>>,
+  params?: any,
+): Promise<void> => {
+  setIsLoading(true);
+  const url = API_ENDPOINTS[endpoint](params);
+  axios
+  .get(url, {
+    responseType: 'blob',
+    onDownloadProgress: (progressEvent) => {
+      const {loaded, total} = progressEvent;
+      if (total !== undefined) {
+        setProgress(Math.round((loaded * 100) / total));
+      }
+    },
+  })
+  .then((response) => {
+    const url = window.URL.createObjectURL(new Blob([ response.data ]));
     const link = document.createElement('a');
-    link.href = download_url;
-    link.setAttribute('download', `${name}${extension}`);
+    link.href = url;
+    link.setAttribute('download', name + extension);
     document.body.appendChild(link);
     link.click();
-    window.URL.revokeObjectURL(download_url);
-  } catch (error) {
-    console.error('Error downloading document:', error);
-  }
-}
+    window.URL.revokeObjectURL(url);
+    setTimeout(() => {
+      if(response.status === 200) {
+        setToastComponent({type: 'success', message: 'Download complete!'});
+      } else {
+        setToastComponent({type: 'error', message: 'Download failed!'});
+      }
+      setIsLoading(false);
+      setProgress(-1);
+    }, 1000);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+    setToastComponent({type: 'error', message: 'Download failed!'});
+    setIsLoading(false);
+  });
+};
+

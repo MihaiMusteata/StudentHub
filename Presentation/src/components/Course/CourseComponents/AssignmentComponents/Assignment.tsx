@@ -232,7 +232,7 @@ const Assignment = () => {
                   <h4 className='text-white text-capitalize mb-0'>{`${assignment.name}`}</h4>
                 </div>
                 <h5 className='text-body font-weight-bolder my-3'>{`Task for ${assignment.name} : ${assignment.task}`}</h5>
-                <div className='timeline timeline-one-side'>
+                <div className='timeline timeline-one-side mb-3'>
                   {
                     user!.role === 'Student' && resources.map((resource, index) => (
                       <div key={index}>
