@@ -12,4 +12,5 @@ public class LessonAttendanceDbTable
   public int StudentId { get; set; }
   public virtual StudentDbTable Student { get; set; }
   public string Status { get; set; }
+  public DateTime Date { get; set; }
 }

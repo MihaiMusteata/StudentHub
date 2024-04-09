@@ -9,7 +9,8 @@ public interface ICourseService
   Task<IdentityResult> CreateAccessKey(AccessData accessData);
   Task<IdentityResult> AssignTeacherToCourse(int courseId, int teacherId);
   Task<IdentityResult> RemoveTeacherFromCourse(int courseId, int teacherId);
-  Task<List<string>> GetEnrolledGroups(int courseId);
+  Task<List<GroupData>> GetEnrolledGroups(int courseId);
+  Task<List<StudentMinimal>> GetEnrolledStudents(int courseId, int groupId);
   Task<List<CourseInformation>> GetTeacherCourses(int teacherId);
   Task<List<Teacher>> GetCourseTeachers(int courseId);
   Task<List<Teacher>> GetAvailableTeachers(int courseId);

@@ -21,6 +21,7 @@ import Courses from './components/Course/Courses.tsx';
 import Assignment from './components/Course/CourseComponents/AssignmentComponents/Assignment.tsx';
 import UserContext from './context/userContext';
 import SearchedCourses from './components/Course/SearchedCourses.tsx';
+import AttendanceList from './components/Course/CourseComponents/AttendanceComponents/AttendanceList.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -123,6 +124,7 @@ function App() {
                             <Route path='/courses' element={<Courses fullPage={true} />} />
                             <Route path='/courses/course' element={<CoursePage />} />
                             <Route path='/courses/assignment' element={<Assignment />} />
+                            <Route path='/courses/course/:courseId/attendance' element={<AttendanceList />} />
                           </>
                         )}
                         {user.role === 'Student' && (

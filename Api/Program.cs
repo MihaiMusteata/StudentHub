@@ -34,6 +34,8 @@ builder.Services.AddScoped<IDocumentsService, DocumentsService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<ILessonAssignmentService, LessonAssignmentService>();
+builder.Services.AddScoped<ILessonAttendanceService, LessonAttendanceService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<StudentHubContext>()
     .AddUserValidator<UserValidator>()
@@ -48,7 +50,6 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartHeadersLengthLimit = int.MaxValue;
 });
 
-// limits response size to 3GB for file downloads
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024;

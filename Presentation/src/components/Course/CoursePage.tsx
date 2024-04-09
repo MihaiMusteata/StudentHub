@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiGetRequest } from '../../scripts/api.tsx';
 import AddNewLessonModal from './CourseComponents/LessonComponents/AddNewLessonModal.tsx';
 import { useUser } from '../../context/userContext.tsx';
-import GroupsTwoToneIcon from '@mui/icons-material/GroupsTwoTone';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export interface Course {
   id: number,
@@ -66,6 +66,10 @@ const CoursePage = () => {
     setLessons(prevLessons => prevLessons.map(lesson => lesson.id === newLesson.id ? newLesson : lesson));
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   useEffect(() => {
     fetchCourse();
   }, []);
@@ -81,11 +85,15 @@ const CoursePage = () => {
 
             <div className='card mt-4'>
               <div className='card-header p-0 position-relative mt-n4 mx-3 z-index-2'>
-                <div className='d-flex justify-content-between align-items-center bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 px-3'>
+                <div className='d-flex justify-content-start align-items-center bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 px-3'>
+                  <ArrowBackIcon
+                    style={{color: 'white', cursor: 'pointer', marginRight: '20px'}}
+                    onClick={() => handleGoBack()}
+                  />
                   <h4 className='text-white text-capitalize mb-0'>{`${course?.code} ${course?.name}`}</h4>
                   {
                     user?.role === 'Teacher' &&
-                    <div className='d-flex align-items-center'>
+                    <div className='d-flex align-items-center ms-auto'>
                       <a className='text-sm me-3 cursor-pointer' style={{color: '#03a9f4'}}>
                         <i className='fas fa-edit me-2' />
                         Edit
@@ -98,15 +106,9 @@ const CoursePage = () => {
                   }
                 </div>
               </div>
-              <div className='card-header pb-0 p-3 mx-3 mt-2'>
+              <div className='card-header pb-0 pe-0 p-3 mx-3 mt-2'>
                 <div className='row'>
                   <ul className='list-group'>
-                    <li className='list-group-item border-0 p-4 mb-4 bg-gray-100 border-radius-lg'>
-                      <div className='d-flex cursor-pointer'>
-                        <GroupsTwoToneIcon style={{color: 'teal'}} />
-                        <h6 className='font-weight-normal m-0 ms-2 text-start'> Attendances</h6>
-                      </div>
-                    </li>
                     {
                       lessons.map((lesson, index) => {
                         return (

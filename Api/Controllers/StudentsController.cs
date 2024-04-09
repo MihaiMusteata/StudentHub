@@ -9,7 +9,6 @@ namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-// [Authorize(Roles = "Admin")]
 public class StudentsController : ControllerBase
 {
     private readonly IStudentsService _studentsService;

@@ -1,9 +1,6 @@
 namespace Application.Contract;
-public class Student
+public class Student : StudentMinimal
 {
-    public int Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
     public DateTime BirthDate { get; set; }
     public string UserId { get; set; }
     public int DepartmentId { get; set; }

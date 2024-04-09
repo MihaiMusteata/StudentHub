@@ -1,8 +1,5 @@
-export interface Student {
-    id: string;
+export interface Student extends StudentMinimal {
     userId: string;
-    firstName: string;
-    lastName: string;
     departmentId: number;
     birthDate: string;
     enrollmentDate: string;
@@ -17,4 +14,10 @@ export interface Student {
     degreeType: string;
     year: string;
     groupId: number;
+}
+
+export interface StudentMinimal {
+    id: string;
+    firstName: string;
+    lastName: string;
 }

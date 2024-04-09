@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, Method } from 'axios';
-import { Dispatch, SetStateAction, useContext } from 'react';
-import { ToastContext, toastProps } from '../App.tsx';
+import { Dispatch, SetStateAction } from 'react';
+import { toastProps } from '../App.tsx';
 
 interface ApiEndpoints {
   [key: string]: (params?: any) => string;
@@ -33,6 +33,9 @@ const API_ENDPOINTS: ApiEndpoints = {
   'uploadSubmission': (params?: any) => `/api/StudentCourse/upload-submission/${params?.studentId}/${params?.lessonAssignmentId}`,
   'submissions': (params?: any) => `/api/StudentCourse/submissions?studentId=${params?.studentId}&lessonAssignmentId=${params?.lessonAssignmentId}`,
 
+  // Group
+  'studentsFromGroup': (params?: any) => `/api/Group/students/${params?.groupId}`,
+
   // Teachers
   'teachers': () => `/api/Teachers/teachers`,
   'teacherById': (params?: any) => `/api/Teachers/teacher/id/${params?.id}`,
@@ -53,6 +56,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'teacherCourses': (params?: any) => `/api/Course/teacher-courses?teacherId=${params?.teacherId}`,
   'studentCourses': (params?: any) => `/api/StudentCourse/student-courses?studentId=${params?.studentId}`,
   'enrolledGroups': (params?: any) => `/api/Course/enrolled-groups?courseId=${params?.courseId}`,
+  'enrolledStudents': (params?: any) => `/api/Course/enrolled-students?courseId=${params?.courseId}&groupId=${params?.groupId}`,
   'courseLessons': (params?: any) => `/api/Course/course-lessons?courseId=${params?.courseId}`,
   'course': (params?: any) => `/api/Course/course?id=${params?.id}`,
   'addCourse': () => `/api/Course/course`,
@@ -66,6 +70,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'searchCourses': (params?: any) => `/api/Course/search-courses?search=${params?.search}`,
 
   // Lesson
+  'lesson': (params?: any) => `/api/Lesson/lesson?id=${params?.lessonId}`,
   'lessonDocuments': (params?: any) => `/api/Lesson/lesson-documents?lessonId=${params?.lessonId}`,
   'addLesson': () => '/api/Lesson/lesson',
   'deleteLesson': (params?: any) => `/api/Lesson/lesson?id=${params.id}`,
@@ -80,6 +85,9 @@ const API_ENDPOINTS: ApiEndpoints = {
   'lessonAssignments': (params?: any) => `/api/LessonAssignment/assignments/${params?.lessonId}`,
   'uploadAssignmentDocument': (params?: any) => `/api/LessonAssignment/upload-document/${params?.lessonAssignmentId}`,
   'lessonAssignmentResources': (params?: any) => `/api/LessonAssignment/resources/${params?.lessonAssignmentId}`,
+  
+  // Lesson Attendance
+  'recordAttendance': () => `/api/LessonAttendance/record-attendance`,
 
   // Document
   'uploadDocument': () => `/api/Documents/upload`,

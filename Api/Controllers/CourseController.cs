@@ -139,6 +139,13 @@ public class CourseController : ControllerBase
     var groups = await _courseService.GetEnrolledGroups(courseId);
     return Ok(groups);
   }
+  
+  [HttpGet("enrolled-students")]
+  public async Task<IActionResult> GetEnrolledStudents(int courseId, int groupId)
+  {
+    var students = await _courseService.GetEnrolledStudents(courseId, groupId);
+    return Ok(students);
+  }
 
   [HttpGet("teacher-courses")]
   public async Task<IActionResult> GetTeacherCourses(int teacherId)

@@ -242,15 +242,38 @@ public class CourseService : ICourseService
     }
   }
 
-  public async Task<List<string>> GetEnrolledGroups(int courseId)
+  public async Task<List<GroupData>> GetEnrolledGroups(int courseId)
   {
     var groups = await _context.CourseAccessKeys
       .Where(cak => cak.CourseId == courseId)
-      .Select(cak => cak.Group.Name)
+      .Select(cak => new GroupData
+      {
+        Id = cak.Group.Id,
+        Name = cak.Group.Name
+      })
       .Distinct()
       .ToListAsync();
-
+    
     return groups;
+  }
+  
+  public async Task<List<StudentMinimal>> GetEnrolledStudents(int courseId, int groupId)
+  {
+    var students = await _context.Students
+      .Where(s => s.GroupId == groupId)
+      .Select(s => s.Id)
+      .ToListAsync();
+    
+    var enrolledStudents = await _context.EnrolledStudents
+      .Where(es => es.CourseId == courseId && students.Any(s => s == es.StudentId))
+      .Select(es => new StudentMinimal
+      {
+        Id = es.Student.Id,
+        FirstName = es.Student.User.FirstName,
+        LastName = es.Student.User.LastName
+      })
+      .ToListAsync();
+    return enrolledStudents;
   }
 
   public async Task<CourseInformation?> GetCourse(int courseId)
@@ -278,7 +301,7 @@ public class CourseService : ICourseService
       Name = course.Name,
       Description = course.Description,
       Discipline = course.Discipline.Name,
-      EnrolledGroups = groups
+      EnrolledGroups = groups.Select(g => g.Name).ToList()
     };
 
     return courseInformation;
