@@ -88,6 +88,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   
   // Lesson Attendance
   'recordAttendance': () => `/api/LessonAttendance/record-attendance`,
+  'getAttendance': (params?: any) => `/api/LessonAttendance/get-attendance?lessonId=${params?.lessonId}&date=${params?.date}&groupId=${params?.groupId}`,
 
   // Document
   'uploadDocument': () => `/api/Documents/upload`,

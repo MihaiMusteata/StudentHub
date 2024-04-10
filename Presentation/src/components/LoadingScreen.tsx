@@ -1,8 +1,9 @@
 import { Hourglass, ThreeDots } from "react-loader-spinner"
+import { FC } from 'react';
 
-const LoadingScreen = () => {
+const LoadingScreen: FC<{ height?: string }> = ({ height }) => {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: height ? height : '100vh', flexDirection: 'column' }}>
             <Hourglass
                 visible={true}
                 height="80"

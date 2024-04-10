@@ -94,7 +94,7 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
   };
   const handleAccessAttendance = () => {
     navigate(`/courses/course/${lesson.courseId}/attendance?lessonId=${lesson.id}`);
-  }
+  };
   const DeleteLesson = async () => {
     try {
       const result = await ApiDeleteRequest('deleteLesson', {id: lesson.id});
@@ -146,18 +146,24 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
           </div>
         }
       </div>
-      
+
       <Divider className='m-0 my-3' />
-      
-      <div className='d-flex mb-3'>
-        <div className='cursor-pointer d-flex' onClick={handleAccessAttendance}>
-          <GroupsTwoToneIcon style={{color: 'teal'}} />
-          <h6 className='font-weight-normal m-0 ms-2 text-start'> Attendances</h6>
+      {
+        user!.role === 'Teacher' &&
+        <div className='d-flex mb-3'>
+          <div className='cursor-pointer d-flex' onClick={handleAccessAttendance}>
+            <GroupsTwoToneIcon style={{color: 'teal'}} />
+            <h6 className='font-weight-normal m-0 ms-2 text-start'> Attendances</h6>
+          </div>
+          <Tooltip title={`View ${lesson.name} attendances`} placement='top'>
+            <FormatListBulletedIcon
+              className='ms-auto cursor-pointer'
+              style={{color: 'black'}}
+              onClick={handleAccessAttendance}
+            />
+          </Tooltip>
         </div>
-        <Tooltip title={`View ${lesson.name} attendances`} placement='top'>
-          <FormatListBulletedIcon className='ms-auto cursor-pointer' style={{color: 'black'}} />
-        </Tooltip>
-      </div>
+      }
 
       {
         documents.map((item, index) => {
