@@ -7,7 +7,7 @@ interface ApiEndpoints {
 }
 
 const API_ENDPOINTS: ApiEndpoints = {
-  // Authentification
+  // Authentication
   'login': () => `/api/Auth/login`,
   'signup': () => `/api/Auth/signup`,
   'profile': () => `/api/Profile/profile`,
@@ -26,6 +26,9 @@ const API_ENDPOINTS: ApiEndpoints = {
   'deleteStudent': (params?: any) => `/api/Students/student?id=${params?.studentId}`,
   'updateStudent': () => `/api/Students/student`,
   'addStudent': () => `/api/Students/student`,
+  
+  // Submissions
+  'groupSubmissions': (params?: any) => `/api/Submissions/group-submissions?courseId=${params?.courseId}&assignmentId=${params?.assignmentId}&groupId=${params?.groupId}`,
 
   // StudentCourse
   'enrollStudent': () => `/api/StudentCourse/enroll`,
@@ -88,7 +91,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   
   // Lesson Attendance
   'recordAttendance': () => `/api/LessonAttendance/record-attendance`,
-  'getAttendance': (params?: any) => `/api/LessonAttendance/get-attendance?lessonId=${params?.lessonId}&date=${params?.date}&groupId=${params?.groupId}`,
+  'getAttendance': (params?: any) => `/api/LessonAttendance/get-attendance?courseId=${params?.courseId}&lessonId=${params?.lessonId}&date=${params?.date}&groupId=${params?.groupId}`,
 
   // Document
   'uploadDocument': () => `/api/Documents/upload`,

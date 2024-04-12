@@ -9,7 +9,7 @@ import { Dayjs } from 'dayjs';
 import { ToastContext } from '../../../../App.tsx';
 import LoadingScreen from '../../../LoadingScreen.tsx';
 
-interface GroupData {
+export interface GroupData {
   id: number;
   name: string;
 }
@@ -82,6 +82,7 @@ const AttendanceList: FC = () => {
     setIsLoading(true);
     try {
       const result = await ApiGetRequest('getAttendance', {
+        courseId: courseId,
         lessonId: lessonId,
         date: `${lessonDate?.format('YYYY-MM-DD')}T${lessonTime?.format('HH:mm')}`,
         groupId: group,

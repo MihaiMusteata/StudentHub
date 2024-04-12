@@ -1,6 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import AssignmentTwoToneIcon from '@mui/icons-material/AssignmentTwoTone';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
@@ -11,14 +12,18 @@ import Tooltip from '@mui/material/Tooltip';
 import { ApiDeleteRequest } from '../../../../scripts/api.tsx';
 import { ToastContext } from '../../../../App.tsx';
 import { useUser } from '../../../../context/userContext.tsx';
+import AccessSubmissionModal from '../AssignmentComponents/AccessSubmissionModal.tsx';
 
 interface LessonTaskProps {
   assignment: Item;
   setAssignmentTrigger: (trigger: string) => void;
+  courseId: number;
+  lessonId: number;
 }
 
-const LessonAssignment: FC<LessonTaskProps> = ({assignment, setAssignmentTrigger}) => {
+const LessonAssignment: FC<LessonTaskProps> = ({assignment, setAssignmentTrigger, courseId, lessonId}) => {
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const [ isSubmissionModalOpen, setIsSubmissionModalOpen ] = useState<boolean>(false);
   const setToastComponent = useContext(ToastContext);
   const navigate = useNavigate();
   const {user} = useUser();
@@ -41,6 +46,10 @@ const LessonAssignment: FC<LessonTaskProps> = ({assignment, setAssignmentTrigger
     }
     setIsLoading(false);
   };
+  const accessSubmissions = () => {
+    setIsSubmissionModalOpen(true);
+  };
+
   return (
     <Spin spinning={isLoading} indicator={<></>}>
       <div className='col-12 text-dark d-flex align-items-center mb-3'>
@@ -57,7 +66,12 @@ const LessonAssignment: FC<LessonTaskProps> = ({assignment, setAssignmentTrigger
               isLoading ? <LoadingOutlined className='ms-auto' /> :
                 <>
                   <div className='ms-auto'>
-                    <CheckBoxOutlineBlankIcon />
+                    <Tooltip title={`Access ${assignment.name} Submissions`} placement='top'>
+                      <FolderCopyIcon
+                        className='cursor-pointer'
+                        onClick={accessSubmissions}
+                      />
+                    </Tooltip>
                     <Tooltip title={`Delete ${assignment.name}`} placement='top'>
                       <ClearIcon
                         className='cursor-pointer'
@@ -74,9 +88,19 @@ const LessonAssignment: FC<LessonTaskProps> = ({assignment, setAssignmentTrigger
           <>
             <div className='ms-auto'>
               <CheckBoxOutlineBlankIcon />
+
               {/*<CheckBoxIcon style={{color:'green'}}/>*/}
             </div>
           </>
+        }
+        {
+          isSubmissionModalOpen &&
+          <AccessSubmissionModal
+            lessonAssignmentId={assignment.id}
+            courseId={courseId}
+            isModalOpen={isSubmissionModalOpen}
+            setIsModalOpen={setIsSubmissionModalOpen}
+          />
         }
       </div>
     </Spin>

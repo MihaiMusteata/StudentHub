@@ -41,10 +41,11 @@ public class LessonAttendanceController: ControllerBase
   }
   
   [HttpGet("get-attendance")]
-  public async Task<IActionResult> GetAttendance(int lessonId, DateTime date, int groupId)
+  public async Task<IActionResult> GetAttendance(int courseId, int lessonId, DateTime date, int groupId)
   {
     GroupAttendanceData form = new GroupAttendanceData
     {
+      CourseId = courseId,
       CourseLessonId = lessonId,
       Date = date,
       GroupId = groupId

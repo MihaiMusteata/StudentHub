@@ -182,6 +182,8 @@ const Lesson: FC<LessonProps> = ({lesson, onDeleteLesson, onEditLesson}) => {
           return (
             <div key={index}>
               <LessonAssignment
+                lessonId={lesson.id}
+                courseId={lesson.courseId}
                 assignment={item}
                 setAssignmentTrigger={setAssignmentTrigger}
               />

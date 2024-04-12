@@ -20,7 +20,7 @@ export interface FieldConfig {
   type: 'text' | 'select' | 'date' | 'time' | 'multiple-select';
   rules?: Rule[];
   value: string | number | undefined | Dayjs;
-  options?: { value: string; label: string }[];
+  options?: { value: string | number; label: string }[];
 }
 
 interface ModalFormProps<T> {

@@ -15,7 +15,7 @@ interface AssignmentDocumentProps {
   time?: string;
   permission?: boolean;
   extension: string;
-  setDocumentTrigger: (documentTrigger: string) => void;
+  setDocumentTrigger?: (documentTrigger: string) => void;
 }
 
 const AssignmentDocument = ({
@@ -34,7 +34,7 @@ const AssignmentDocument = ({
     try {
       const result = await ApiDeleteRequest('deleteDocument', {documentId: documetId});
       if (result.status === 200) {
-        setDocumentTrigger(`Document ${documentId} deleted`);
+        if (setDocumentTrigger) {setDocumentTrigger(`Document ${documentId} deleted`);}
         setToastComponent({type: 'success', message: 'Document deleted successfully!'});
       } else {
         result.body = JSON.parse(result.body);

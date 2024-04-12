@@ -103,16 +103,9 @@ public class LessonAttendanceService : ILessonAttendanceService
       .ToListAsync();
     _logger.LogInformation("Students extracted : {students}", students);
 
-    _logger.LogInformation("Getting course id for lesson {lessonId}", form.CourseLessonId);
-    var courseId = await _context.CourseLessons
-      .Where(x => x.Id == form.CourseLessonId)
-      .Select(x => x.CourseId)
-      .FirstOrDefaultAsync();
-    _logger.LogInformation("Course id : {courseId}", courseId);
-
-    _logger.LogInformation("Extracting enrolled students for course {courseId}", courseId);
+    _logger.LogInformation("Extracting enrolled students for course {courseId}", form.CourseId);
     var enrolledStudents = await _context.EnrolledStudents
-      .Where(x => x.CourseId == courseId)
+      .Where(x => x.CourseId == form.CourseId)
       .Select(x => x.StudentId)
       .ToListAsync();
     _logger.LogInformation("Enrolled students extracted : {enrolledStudents}", enrolledStudents);

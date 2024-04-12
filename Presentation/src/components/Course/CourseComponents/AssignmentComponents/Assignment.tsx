@@ -14,7 +14,7 @@ import { ToastContext } from '../../../../App.tsx';
 import { iconMap } from '../LessonComponents/LessonDocument.tsx';
 import AssignmentDocument from './AssignmentDocument.tsx';
 
-interface Submission extends Item {
+export interface Submission extends Item {
   documentData: Document;
   submissionDate: string;
 }
@@ -27,7 +27,7 @@ export interface AssignmentData extends Item {
   timeRemaining: string;
 }
 
-const calculateTimeRemaining = (time: number) => {
+export const calculateTimeRemaining = (time: number) => {
   time = Math.abs(time);
   const days = Math.floor(time / (1000 * 60 * 60 * 24));
   const hours = Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -50,7 +50,7 @@ const Assignment = () => {
   const [ assignmentTrigger, setAssignmentTrigger ] = useState<string>('');
   const [ submissions, setSubmissions ] = useState<Submission[]>([]);
   const [ resources, setResources ] = useState<Document[]>([]);
-  const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
+  const [ isEditModalOpen, setIsEditModalOpen ] = useState<boolean>(false);
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const [ documentTrigger, setDocumentTrigger ] = useState<string>('');
   const [ student, setStudent ] = useState<any>({});
@@ -145,7 +145,7 @@ const Assignment = () => {
         result.dueDate = format(new Date(result.dueDate), 'EEEE, d MMMM yyyy, HH:mm');
         setAssignment(result);
       } else {
-        // navigate(-1);
+        navigate(-1);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -153,7 +153,7 @@ const Assignment = () => {
   };
 
   const editAssignment = () => {
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
   const handleGoBack = () => {
     navigate(-1);
@@ -282,21 +282,24 @@ const Assignment = () => {
                   {
                     user?.role === 'Teacher' &&
                     <div className='text-center d-flex justify-content-center'>
+
                       <button
-                        className='btn btn-info mt-4 d-flex align-middle me-3'
+                        className='btn btn-info mt-4'
                         onClick={editAssignment}
                       >
                         <EditIcon className='fs-5 me-1' />
                         <span>Edit</span>
                       </button>
+
                       <Spin spinning={isLoading} indicator={<LoadingOutlined />}>
-                        <Upload customRequest={UploadRequest} showUploadList={false} className='me-4 mb-3'>
-                          <button className='btn btn-success mt-4 d-flex justify-content-center align-middle'>
+                        <Upload customRequest={UploadRequest} showUploadList={false} className='mx-3'>
+                          <button className='btn btn-success mt-4 d-flex align-middle'>
                             <UploadFileIcon className='fs-5 me-1' />
                             <span>Add Resources</span>
                           </button>
                         </Upload>
                       </Spin>
+
                     </div>
                   }
                 </div>
@@ -346,13 +349,18 @@ const Assignment = () => {
         </div>
       </div>
       {
-        isModalOpen && assignment && user?.role === 'Teacher' &&
-        <EditAssignmentModal
-          isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
-          assignment={assignment}
-          setAssignmentTrigger={setAssignmentTrigger}
-        />
+        user?.role === 'Teacher' && assignment &&
+        <>
+          {
+            isEditModalOpen && 
+            <EditAssignmentModal
+              isModalOpen={isEditModalOpen}
+              setIsModalOpen={setIsEditModalOpen}
+              assignment={assignment}
+              setAssignmentTrigger={setAssignmentTrigger}
+            />
+          }
+        </>
       }
 
     </>
