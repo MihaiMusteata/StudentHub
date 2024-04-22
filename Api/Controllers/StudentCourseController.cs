@@ -106,4 +106,11 @@ public class StudentCourseController : ControllerBase
     var submissions = await _studentsService.GetSubmissions(studentId, lessonAssignmentId);
     return Ok(submissions);
   }
+  
+  [HttpGet("grades")]
+  public async Task<IActionResult> GetStudentGrades(int studentId, int courseId)
+  {
+    var grades = await _studentsService.GetStudentGrades(studentId, courseId);
+    return Ok(grades);
+  }
 }

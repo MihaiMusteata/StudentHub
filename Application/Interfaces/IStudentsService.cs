@@ -15,5 +15,6 @@ public interface IStudentsService
   Task<IdentityResult> UnenrollStudent(int studentId, int courseId);
   Task<List<CourseInformation>> GetStudentCourses(int studentId);
   Task<IdentityResult> UploadSubmission(int studentId, int lessonAssignmentId, DocumentData documentData);
-  Task<List<SubmissionData>> GetSubmissions(int studentId, int lessonAssignmentId);
+  Task<StudentSubmissions> GetSubmissions(int studentId, int lessonAssignmentId);
+  Task<List<StudentGrades>> GetStudentGrades(int studentId, int courseId);
 }

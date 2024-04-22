@@ -13,6 +13,7 @@ import { Spin, Upload } from 'antd';
 import { ToastContext } from '../../../../App.tsx';
 import { iconMap } from '../LessonComponents/LessonDocument.tsx';
 import AssignmentDocument from './AssignmentDocument.tsx';
+import { SubmissionsListData } from './SubmissionsList.tsx';
 
 export interface Submission extends Item {
   documentData: Document;
@@ -48,7 +49,13 @@ export const calculateTimeRemaining = (time: number) => {
 const Assignment = () => {
   const [ assignment, setAssignment ] = useState<AssignmentData | undefined>(undefined);
   const [ assignmentTrigger, setAssignmentTrigger ] = useState<string>('');
-  const [ submissions, setSubmissions ] = useState<Submission[]>([]);
+  const [ studentSubmissions, setStudentSubmissions ] = useState<SubmissionsListData>({
+    submissions: [],
+    studentName: '',
+    studentId: 0,
+    submissionStatus: '',
+    grade: undefined,
+  });
   const [ resources, setResources ] = useState<Document[]>([]);
   const [ isEditModalOpen, setIsEditModalOpen ] = useState<boolean>(false);
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
@@ -77,7 +84,7 @@ const Assignment = () => {
     try {
       const result = await ApiGetRequest('submissions', {studentId: student?.id, lessonAssignmentId: id});
       if (result.status === 200) {
-        setSubmissions(result.body);
+        setStudentSubmissions(result.body);
         console.log('Submissions:', result.body);
       }
     } catch (error) {
@@ -128,14 +135,14 @@ const Assignment = () => {
       if (response.status === 200) {
         const result = response.body as AssignmentData;
         const timeRemaining = new Date(result.dueDate).getTime() - new Date().getTime();
-        if (submissions.length === 0) {
+        if (studentSubmissions.submissions.length === 0) {
           if (timeRemaining < 0) {
             result.timeRemaining = `Assignment is overdue by ${calculateTimeRemaining(timeRemaining)}`;
           } else {
             result.timeRemaining = calculateTimeRemaining(timeRemaining);
           }
         } else {
-          const submissionDate = new Date(submissions[0].submissionDate).getTime() - new Date(result.dueDate).getTime();
+          const submissionDate = new Date(studentSubmissions.submissions[0].submissionDate).getTime() - new Date(result.dueDate).getTime();
           if (submissionDate < 0) {
             result.timeRemaining = `Assignment was submitted ${calculateTimeRemaining(submissionDate)} early`;
           } else {
@@ -173,7 +180,7 @@ const Assignment = () => {
 
   useEffect(() => {
     fetchAssignment();
-  }, [ assignmentTrigger, submissions.length ]);
+  }, [ assignmentTrigger, studentSubmissions.submissions.length ]);
 
   useEffect(() => {
     fetchResources();
@@ -191,13 +198,13 @@ const Assignment = () => {
   const rows = assignment ? [
     {
       label: 'Submission status',
-      value: submissions.length > 0 ? 'Submitted' : 'Not submitted',
-      backgroundColor: submissions.length > 0 ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
+      value: studentSubmissions.submissions.length > 0 ? 'Submitted' : 'Not submitted',
+      backgroundColor: studentSubmissions.submissions.length > 0 ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
     },
     {
       label: 'Grading status',
-      value: 'Not graded',
-      backgroundColor: 'rgba(0,0,0,0)',
+      value: studentSubmissions.grade ? 'Graded' : 'Not graded',
+      backgroundColor: studentSubmissions.grade ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
     },
     {
       label: 'Due date',
@@ -208,12 +215,25 @@ const Assignment = () => {
       value: assignment!.timeRemaining,
       backgroundColor: assignment!.timeRemaining.includes('overdue') || assignment!.timeRemaining.includes('late')
         ? 'rgba(255,0,0,0.1)'
-        : submissions.length > 0 ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
+        : studentSubmissions.submissions.length > 0 ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
     },
     {
       label: 'Allow submission',
       value: assignment!.allowSubmission ? 'Yes' : 'No',
     },
+  ] : [];
+  
+  const feedback = assignment ? [
+    {
+      label: 'Grade',
+      value: studentSubmissions.grade && studentSubmissions.grade.grade ? studentSubmissions.grade.grade : 'No' +
+        ' feedback',
+      backgroundColor: studentSubmissions.grade ? 'rgba(0,255,0,0.1)' : 'rgba(0,0,0,0)',
+    },
+    {
+      label: 'Graded by',
+      value: studentSubmissions.grade ? studentSubmissions.grade.teacherName : 'No feedback',
+    }
   ] : [];
 
   return (
@@ -314,7 +334,7 @@ const Assignment = () => {
                   : 'Resources'}</h5>
                 <div className='timeline timeline-one-side'>
                   {
-                    user!.role === 'Student' && submissions.map((submission, index) => (
+                    user!.role === 'Student' && studentSubmissions.submissions.map((submission, index) => (
                       <div key={index}>
                         <AssignmentDocument
                           documentId={submission.documentData.id}
@@ -346,13 +366,34 @@ const Assignment = () => {
               </div>
             </div>
           </div>
+          {
+            user!.role === 'Student' &&
+            <div className='col-12 mb-4'>
+              <div className='card h-100'>
+                <div className='card-body p-3'>
+                  <h5 className='text-body font-weight-normal mb-4'>Feedback</h5>
+                  <div className='table-responsive p-0'>
+                    <table className='table mb-0 color-black'>
+                      <tbody>
+                      {
+                        feedback.map((item, index) => {
+                          return renderRow(index + 1, item.label, item.value?.toString(), item.backgroundColor);
+                        })
+                      }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
         </div>
       </div>
       {
         user?.role === 'Teacher' && assignment &&
         <>
           {
-            isEditModalOpen && 
+            isEditModalOpen &&
             <EditAssignmentModal
               isModalOpen={isEditModalOpen}
               setIsModalOpen={setIsEditModalOpen}

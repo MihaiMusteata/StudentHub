@@ -54,7 +54,7 @@ public class SubmissionService : ISubmissionService
         {
           Id = x.Id,
           SubmissionDate = x.SubmissionDate,
-          DocumentData = new DocumentData
+          DocumentData = new DocumentMinimal
           {
             Id = x.Document.Id,
             Name = x.Document.Name,
@@ -62,9 +62,18 @@ public class SubmissionService : ISubmissionService
           },
         })
         .ToListAsync();
+      
+      student.Grade = await _context.Grades
+        .Where(x => x.AssignmentId == form.AssignmentId && x.StudentId == student.StudentId)
+        .Select(x => new GradeMinimalInfo
+        {
+          Grade = x.Grade,
+          TeacherName = x.TeacherName
+        })
+        .FirstOrDefaultAsync();
       student.Submissions = enrolledStudents.Contains(student.StudentId) ? studentSubmissions : null;
     }
-    
+
     _logger.LogInformation("Students submissions extracted");
     return studentsSubmissions;
   }

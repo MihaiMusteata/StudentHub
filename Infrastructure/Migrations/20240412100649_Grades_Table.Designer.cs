@@ -4,6 +4,7 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(StudentHubContext))]
-    partial class StudentHubContextModelSnapshot : ModelSnapshot
+    [Migration("20240412100649_Grades_Table")]
+    partial class Grades_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -256,13 +259,13 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AssignmentId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Grade")
                         .HasColumnType("int");
 
-                    b.Property<int>("StudentId")
+                    b.Property<DateTime>("GradeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SubmissionId")
                         .HasColumnType("int");
 
                     b.Property<string>("TeacherName")
@@ -271,9 +274,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignmentId");
-
-                    b.HasIndex("StudentId");
+                    b.HasIndex("SubmissionId");
 
                     b.ToTable("Grades");
                 });
@@ -859,21 +860,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.UniversityTables.GradeDbTable", b =>
                 {
-                    b.HasOne("Domain.UniversityTables.LessonAssignmentDbTable", "Assignment")
+                    b.HasOne("Domain.UniversityTables.SubmissionDbTable", "Submission")
                         .WithMany()
-                        .HasForeignKey("AssignmentId")
+                        .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.UniversityTables.StudentDbTable", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Assignment");
-
-                    b.Navigation("Student");
+                    b.Navigation("Submission");
                 });
 
             modelBuilder.Entity("Domain.UniversityTables.LessonAssignmentDbTable", b =>

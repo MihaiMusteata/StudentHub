@@ -512,14 +512,14 @@ public class StudentsService : IStudentsService
     }
   }
 
-  public async Task<List<SubmissionData>> GetSubmissions(int studentId, int lessonAssignmentId)
+  public async Task<StudentSubmissions> GetSubmissions(int studentId, int lessonAssignmentId)
   {
     var submissions = await _context.Submissions
       .Where(s => s.StudentId == studentId && s.LessonAssignmentId == lessonAssignmentId)
       .Select(s => new SubmissionData
       {
         Id = s.Id,
-        DocumentData = new DocumentData
+        DocumentData = new DocumentMinimal
         {
           Id = s.Document.Id,
           Name = s.Document.Name,
@@ -528,6 +528,53 @@ public class StudentsService : IStudentsService
         SubmissionDate = s.SubmissionDate
       })
       .ToListAsync();
-    return submissions;
+    
+    var assignmentGrade = await _context.Grades
+      .Where(g => g.StudentId == studentId && g.AssignmentId == lessonAssignmentId)
+      .Select(g => new GradeMinimalInfo
+      {
+        Grade = g.Grade,
+        TeacherName = g.TeacherName
+      })
+      .FirstOrDefaultAsync();
+    
+    var studentSubmissions = new StudentSubmissions
+    {
+      StudentId = studentId,
+      Submissions = submissions,
+      Grade = assignmentGrade
+    };
+    
+    return studentSubmissions;
+  }
+
+  public async Task<List<StudentGrades>> GetStudentGrades(int studentId, int courseId)
+  {
+    var result = new List<StudentGrades>();
+    var lessons = await _context.CourseLessons
+      .Where(l => l.CourseId == courseId)
+      .ToListAsync();
+
+    foreach (var lesson in lessons)
+    {
+      var lessonAssignments = await _context.LessonAssignments
+        .Where(la => la.CourseLessonId == lesson.Id)
+        .ToListAsync();
+
+      foreach (var assignment in lessonAssignments)
+      {
+        var studentGrades = await _context.Grades
+          .Where(g => g.StudentId == studentId && g.AssignmentId == assignment.Id)
+          .Select(g => new StudentGrades
+          {
+            Grade = g.Grade,
+            GradeItem = g.Assignment.Name
+          })
+          .ToListAsync();
+
+        result.AddRange(studentGrades);
+      }
+    }
+    return result;
   }
 }

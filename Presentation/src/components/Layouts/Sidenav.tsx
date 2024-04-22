@@ -9,6 +9,7 @@ import { User } from '../../scripts/user';
 import { Link, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CastForEducationIcon from '@mui/icons-material/CastForEducation';
+import GradeIcon from '@mui/icons-material/Grade';
 
 interface SidenavProps {
   user: User;
@@ -54,6 +55,7 @@ const Sidenav: FC<SidenavProps> = ({user}) => {
         return (
           <>
             {navItem(<CastForEducationIcon />, 'Courses', '/courses')}
+            {navItem(<GradeIcon />, 'Grades', '/grades')}
           </>
         );
       default:

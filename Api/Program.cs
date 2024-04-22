@@ -37,6 +37,7 @@ builder.Services.AddScoped<ILessonAssignmentService, LessonAssignmentService>();
 builder.Services.AddScoped<ILessonAttendanceService, LessonAttendanceService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IGradesService, GradesService>();
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<StudentHubContext>()
     .AddUserValidator<UserValidator>()

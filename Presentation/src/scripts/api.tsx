@@ -97,6 +97,9 @@ const API_ENDPOINTS: ApiEndpoints = {
   'uploadDocument': () => `/api/Documents/upload`,
   'downloadDocument': (params?: any) => `/api/Documents/download?id=${params?.documentId}`,
   'deleteDocument': (params?: any) => `/api/Documents/document?id=${params?.documentId}`,
+  
+  // Grades
+  'grade-student': () => `/api/Grades/grade-student`,
 
 };
 

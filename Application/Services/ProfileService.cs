@@ -12,7 +12,7 @@ public class ProfileService : IProfileService
     {
         _userManager = userManager;
     }
-    public async Task<User> GetProfileByToken(string token)
+    public async Task<User?> GetProfileByToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
@@ -21,7 +21,7 @@ public class ProfileService : IProfileService
             return null;
         }
         var userId = jsonToken?.Claims.First(claim => claim.Type == "Id").Value;
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _userManager.FindByIdAsync(userId!);
         return user;
     }
     

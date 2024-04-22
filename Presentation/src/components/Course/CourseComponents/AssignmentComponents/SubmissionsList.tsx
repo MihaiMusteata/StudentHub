@@ -1,9 +1,9 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Collapse, Empty, Popover } from 'antd';
+import { Collapse, Empty, Popover, Select } from 'antd';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { ApiGetRequest } from '../../../../scripts/api.tsx';
+import { useContext, useEffect, useState } from 'react';
+import { ApiGetRequest, ApiPostRequest } from '../../../../scripts/api.tsx';
 import { AssignmentData, calculateTimeRemaining, Submission } from './Assignment.tsx';
 import GradeIcon from '@mui/icons-material/Grade';
 import AssignmentDocument from './AssignmentDocument.tsx';
@@ -11,10 +11,21 @@ import { iconMap } from '../LessonComponents/LessonDocument.tsx';
 import { format } from 'date-fns';
 import NoAccountsIcon from '@mui/icons-material/NoAccounts';
 import InfoIcon from '@mui/icons-material/Info';
+import { ToastContext } from '../../../../App.tsx';
+import { useUser } from '../../../../context/userContext.tsx';
 
-interface SubmissionsListData {
+interface StudentGrade {
+  studentId: number;
+  grade: number | undefined;
+  teacherName: string;
+  assignmentId: string;
+  changed: boolean;
+}
+
+export interface SubmissionsListData {
   studentId: number;
   studentName: string;
+  grade: StudentGrade | undefined;
   submissions: Submission[];
   submissionStatus: string;
 }
@@ -26,23 +37,39 @@ const StatusItem = ({description, Icon, color}: { description: string, Icon: any
       <Icon className={`ms-auto text-${color}`} />
     </div>
   );
-}
+};
 const statusItems = [
-  { description: 'Nothing submitted', Icon: GradeIcon, color: 'secondary' },
-  { description: 'Waiting for review', Icon: GradeIcon, color: 'warning' },
-  { description: 'Graded', Icon: GradeIcon, color: 'success' },
-  { description: 'Not enrolled', Icon: NoAccountsIcon, color: 'danger' }
+  {description: 'Nothing submitted', Icon: GradeIcon, color: 'secondary'},
+  {description: 'Waiting for review', Icon: GradeIcon, color: 'warning'},
+  {description: 'Graded', Icon: GradeIcon, color: 'success'},
+  {description: 'Not enrolled', Icon: NoAccountsIcon, color: 'danger'},
 ];
+
+const gradesList = () => {
+  const grades = [];
+  for (let i = 10; i >= 1; i--) {
+    grades.push(
+      <Select.Option key={i} value={i.toString()}>
+        {i}
+      </Select.Option>,
+    );
+  }
+  return grades;
+};
 
 const SubmissionsList = () => {
   const [ submissions, setSubmissions ] = useState<SubmissionsListData[]>([]);
   const [ dueDate, setDueDate ] = useState<string>('');
   const [ timeRemaining, setTimeRemaining ] = useState<number | undefined>(undefined);
+  const [ teacher, setTeacher ] = useState<any>();
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const groupId = searchParams.get('groupId') as unknown as number;
   const {courseId, assignmentId} = useParams();
+
+  const setToastComponent = useContext(ToastContext);
+  const {user} = useUser();
 
   const getSubmissionStatus = (submission: SubmissionsListData) => {
     if (submission.submissions.length === 0) {
@@ -84,12 +111,44 @@ const SubmissionsList = () => {
       });
       if (result.status === 200) {
         result.body.map((submission: SubmissionsListData) => {
+          submission.grade = {
+            assignmentId: assignmentId!,
+            studentId: submission.studentId,
+            grade: submission.grade ? submission.grade.grade : undefined,
+            teacherName: submission.grade ? submission.grade.teacherName : '',
+            changed: false,
+          };
           if (submission.submissions) {
             getSubmissionStatus(submission);
           }
         });
         console.log('Submissions Result Body:', result.body);
         setSubmissions(result.body);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchTeacher = async () => {
+    try {
+      const result = await ApiGetRequest('teacherByUserId', {userId: user!.id});
+      if (result.status === 200) {
+        setTeacher(result.body);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const submitGrade = async (grade: StudentGrade) => {
+    console.log('Grade:', grade);
+    try {
+      const result = await ApiPostRequest('grade-student', undefined, grade);
+      if (result.status === 200) {
+        setToastComponent({type: 'success', message: 'Grade submitted successfully!'});
+      } else {
+        setToastComponent({type: 'error', message: 'Grade submission failed!'});
       }
     } catch (error) {
       console.log(error);
@@ -106,10 +165,10 @@ const SubmissionsList = () => {
   }, [ courseId, assignmentId, timeRemaining ]);
 
   useEffect(() => {
+    fetchTeacher();
     fetchAssignment();
   }, []);
 
-  console.log('Rendered submissions:', submissions);
   return (
     <div className='container-fluid py-4'>
       <div className='row'>
@@ -122,7 +181,8 @@ const SubmissionsList = () => {
                   onClick={() => handleGoBack()}
                 />
                 <h4 className='text-white text-capitalize mb-0'>{`Submissions`}</h4>
-                <Popover placement='leftTop' title={'Status Icon Meaning'} content={
+                <Popover
+                  placement='leftTop' title={'Status Icon Meaning'} content={
                   <>
                     {
                       statusItems.map((item, index) => {
@@ -176,20 +236,55 @@ const SubmissionsList = () => {
                                         <div className='table-responsive p-0'>
                                           <table className='table mb-3 color-black'>
                                             <tbody>
-                                            <tr style={{backgroundColor: `rgba(0, 0, 0, 0.05)`}}>
+                                            <tr style={{backgroundColor: `rgba(0, 0, 0, 0.05)`, height: '44px'}}>
                                               <td style={{color: 'black', width: '25%', textAlign: 'end'}}>Grade :</td>
                                               <td
                                                 style={{
+                                                  paddingTop: '4px',
+                                                  paddingBottom: '4px',
                                                   color: 'black',
-                                                  width: '75%',
                                                   backgroundColor: 'rgba(0,0,0,0)',
                                                   fontWeight: 'lighter',
+                                                  display: 'flex',
+                                                  justifyContent: 'space-between',
+                                                  alignItems: 'center',
                                                 }}
-                                              >Value
+                                              >
+                                                <Select
+                                                  style={{height: '36px', fontSize: '16px', width: '100px'}}
+                                                  size='large'
+                                                  placeholder='Grade'
+                                                  defaultValue={submission.grade
+                                                    ? submission.grade.grade
+                                                    : undefined}
+                                                  onChange={(value) => {
+                                                    console.log('Value:', value);
+                                                    submission.grade!.grade = parseInt(value.toString());
+                                                    submission.grade!.changed = true;
+                                                    submission.grade!.teacherName
+                                                      = `${teacher.firstName} ${teacher.lastName}`;
+                                                    setSubmissions([ ...submissions ]);
+                                                  }}
+                                                >
+                                                  {
+                                                    gradesList()
+                                                  }
+                                                </Select>
+                                                <button
+                                                  disabled={!submission.grade?.changed}
+                                                  className='mb-0 btn btn-sm bg-gradient-success'
+                                                  onClick={() => {
+                                                    submission.grade && submitGrade(submission.grade);
+                                                  }}
+                                                >
+                                                  Submit
+                                                </button>
                                               </td>
                                             </tr>
-                                            <tr style={{backgroundColor: `rgba(0, 0, 0, 0)`}}>
-                                              <td style={{color: 'black', width: '25%', textAlign: 'end'}}>Submission Status :</td>
+                                            <tr style={{backgroundColor: `rgba(0, 0, 0, 0)`, height: '43px'}}>
+                                              <td style={{color: 'black', width: '25%', textAlign: 'end'}}>Submission
+                                                Status :
+                                              </td>
                                               <td
                                                 style={{
                                                   color: 'black',
@@ -202,7 +297,7 @@ const SubmissionsList = () => {
                                               >{submission.submissionStatus}
                                               </td>
                                             </tr>
-                                            <tr style={{backgroundColor: `rgba(0, 0, 0, 0.05)`}}>
+                                            <tr style={{backgroundColor: `rgba(0, 0, 0, 0.05)`, height: '42px'}}>
                                               <td style={{color: 'black', width: '25%', textAlign: 'end'}}>Submission
                                                 Files :
                                               </td>
@@ -249,7 +344,13 @@ const SubmissionsList = () => {
                                   fontSize: '16px',
                                 },
                                 extra: submission.submissions ?
-                                  <GradeIcon className='text-secondary' />
+                                  submission.submissions.length > 0 ?
+                                    submission.grade ?
+                                      <GradeIcon className='text-success' />
+                                      :
+                                      <GradeIcon className='text-warning' />
+                                    :
+                                    <GradeIcon className='text-secondary' />
                                   :
                                   <NoAccountsIcon className='text-danger' />,
                               },

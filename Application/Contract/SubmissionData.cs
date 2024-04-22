@@ -4,5 +4,5 @@ public class SubmissionData
 {
   public int Id { get; set; }
   public DateTime SubmissionDate { get; set; }
-  public DocumentData DocumentData { get; set; }
+  public DocumentMinimal DocumentData { get; set; }
 }

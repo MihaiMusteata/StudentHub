@@ -4,5 +4,5 @@ namespace Application.Interfaces;
 
 public interface IProfileService
 {
-    Task<User> GetProfileByToken(string token);
+    Task<User?> GetProfileByToken(string token);
 }

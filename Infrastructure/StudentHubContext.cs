@@ -34,6 +34,7 @@ public class StudentHubContext : IdentityDbContext<User>
     public DbSet<LessonResourceDbTable> LessonResources { get; set; }
     public DbSet<EnrolledStudentsDbTable> EnrolledStudents { get; set; }
     public DbSet<AssignmentResourceDbTable> AssignmentResources { get; set; }
+    public DbSet<GradeDbTable> Grades { get; set; }
     
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)

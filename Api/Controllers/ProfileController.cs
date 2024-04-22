@@ -25,17 +25,21 @@ namespace Api.Controllers
                 return BadRequest("No token found");
             }
             var result = await _profileService.GetProfileByToken(token);
-            if (result != null)
+            
+            if (result == null)
             {
-                Profile profile = new Profile
-                {
-                    Id = result.Id,
-                    UserName = result.UserName,
-                    Role = _roleService.GetUserRole(result.Id)
-                };
-                return Ok(profile);
+                return BadRequest("Invalid token");
             }
-            return BadRequest("Token expired");
+            
+            Profile profile = new Profile
+            {
+                Id = result.Id,
+                UserName = result.UserName!,
+                FirstName = result.FirstName,
+                LastName = result.LastName,
+                Role = _roleService.GetUserRole(result.Id)
+            };
+            return Ok(profile);
         }
     
     }
