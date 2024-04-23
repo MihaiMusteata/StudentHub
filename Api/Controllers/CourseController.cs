@@ -2,6 +2,7 @@ using System.Text.Json;
 using Application.Contract;
 using Application.Interfaces;
 using Application.Resources;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;

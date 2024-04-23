@@ -25,6 +25,8 @@ import AttendanceList from './components/Course/CourseComponents/AttendanceCompo
 import SubmissionsList from './components/Course/CourseComponents/AssignmentComponents/SubmissionsList.tsx';
 import Grades from './components/Grades/Grades.tsx';
 import CourseGradesInfo from './components/Grades/CourseGradesInfo.tsx';
+import ForbiddenPage from './components/ForbiddenPage/ForbiddenPage.tsx';
+import NotFoundPage from './components/NotFound/NotFound.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -128,7 +130,10 @@ function App() {
                             <Route path='/courses/course' element={<CoursePage />} />
                             <Route path='/courses/assignment' element={<Assignment />} />
                             <Route path='/courses/course/:courseId/attendance' element={<AttendanceList />} />
-                            <Route path='/courses/course/:courseId/assignment/:assignmentId/submissions' element={<SubmissionsList />} />
+                            <Route
+                              path='/courses/course/:courseId/assignment/:assignmentId/submissions'
+                              element={<SubmissionsList />}
+                            />
                           </>
                         )}
                         {user.role === 'Student' && (
@@ -142,6 +147,8 @@ function App() {
                           </>
                         )}
                         <Route path='*' element={<Navigate to='/dashboard' />} />
+                        <Route path='/forbidden-page' element={<ForbiddenPage />} />
+                        <Route path='/not-found' element={<NotFoundPage />} />
                       </Routes>
                     </Layout>
                   }
@@ -150,6 +157,8 @@ function App() {
                 <>
                   <Route path='/signup' element={<Signup />} />
                   <Route path='/login' element={<Login updateUser={updateUser} setUpdateUser={setUpdateUser} />} />
+                  <Route path='/forbidden-page' element={<ForbiddenPage />} />
+                  <Route path='/not-found' element={<NotFoundPage />} />
                   <Route path='*' element={<Navigate to='/login' />} />
                 </>
               )}

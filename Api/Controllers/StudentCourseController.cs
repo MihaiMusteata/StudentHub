@@ -1,11 +1,13 @@
 using Application.Contract;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(Roles = "Student")]
 public class StudentCourseController : ControllerBase
 {
   private readonly IStudentsService _studentsService;

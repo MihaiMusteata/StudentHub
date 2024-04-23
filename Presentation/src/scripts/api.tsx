@@ -26,7 +26,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'deleteStudent': (params?: any) => `/api/Students/student?id=${params?.studentId}`,
   'updateStudent': () => `/api/Students/student`,
   'addStudent': () => `/api/Students/student`,
-  
+
   // Submissions
   'groupSubmissions': (params?: any) => `/api/Submissions/group-submissions?courseId=${params?.courseId}&assignmentId=${params?.assignmentId}&groupId=${params?.groupId}`,
 
@@ -90,7 +90,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'lessonAssignments': (params?: any) => `/api/LessonAssignment/assignments/${params?.lessonId}`,
   'uploadAssignmentDocument': (params?: any) => `/api/LessonAssignment/upload-document/${params?.lessonAssignmentId}`,
   'lessonAssignmentResources': (params?: any) => `/api/LessonAssignment/resources/${params?.lessonAssignmentId}`,
-  
+
   // Lesson Attendance
   'recordAttendance': () => `/api/LessonAttendance/record-attendance`,
   'getAttendance': (params?: any) => `/api/LessonAttendance/get-attendance?courseId=${params?.courseId}&lessonId=${params?.lessonId}&date=${params?.date}&groupId=${params?.groupId}`,
@@ -99,7 +99,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'uploadDocument': () => `/api/Documents/upload`,
   'downloadDocument': (params?: any) => `/api/Documents/download?id=${params?.documentId}`,
   'deleteDocument': (params?: any) => `/api/Documents/document?id=${params?.documentId}`,
-  
+
   // Grades
   'grade-student': () => `/api/Grades/grade-student`,
 
@@ -111,28 +111,42 @@ export interface ApiResponse {
 }
 
 const apiRequest = async (method: Method, endpoint: string, params?: any, data?: any): Promise<ApiResponse> => {
-  try {
-    const url = API_ENDPOINTS[endpoint](params);
-    console.log('URL:', url);
+    try {
+      const url = API_ENDPOINTS[endpoint](params);
+      console.log('URL:', url);
 
-    const options: { method: Method; url: string; withCredentials: boolean; data?: any } = {
-      method: method,
-      url: url,
-      data: data,
-      withCredentials: true,
-    };
-    const response: AxiosResponse<ApiResponse> = await axios.request({...options});
-    return {status: response.status, body: response.data};
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error;
-      console.log('Axios Error:', axiosError);
-      return {status: axiosError.response?.status || 400, body: axiosError.response?.data};
-    } else {
-      return {status: 400, body: 'Unknown error'};
+      const options: { method: Method; url: string; withCredentials: boolean; data?: any } = {
+        method: method,
+        url: url,
+        data: data,
+        withCredentials: true,
+      };
+      const response: AxiosResponse<ApiResponse> = await axios.request({...options});
+      return {status: response.status, body: response.data};
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error;
+        console.log('Axios Error:', axiosError);
+        switch (axiosError.response?.status) {
+          case 404:
+            window.location.href = '/not-found';
+            break;
+          case 403:
+            window.location.href = '/forbidden-page';
+            break;
+          case 401:
+            window.location.href = '/login';
+            break;
+          default:
+            break;
+        }
+        return {status: axiosError.response?.status || 400, body: axiosError.response?.data};
+      } else {
+        return {status: 400, body: 'Unknown error'};
+      }
     }
   }
-};
+;
 
 export const ApiPostRequest = async (endpoint: string, params?: any, data?: any): Promise<ApiResponse> => {
   return apiRequest('POST', endpoint, params, data);
@@ -202,7 +216,7 @@ export const ApiDownloadDocument = async (
     link.click();
     window.URL.revokeObjectURL(url);
     setTimeout(() => {
-      if(response.status === 200) {
+      if (response.status === 200) {
         setToastComponent({type: 'success', message: 'Download complete!'});
       } else {
         setToastComponent({type: 'error', message: 'Download failed!'});
