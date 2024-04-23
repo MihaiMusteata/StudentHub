@@ -35,6 +35,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'unenrollStudent': (params?: any) => `/api/StudentCourse/unenroll?studentId=${params?.studentId}&courseId=${params?.courseId}`,
   'uploadSubmission': (params?: any) => `/api/StudentCourse/upload-submission/${params?.studentId}/${params?.lessonAssignmentId}`,
   'submissions': (params?: any) => `/api/StudentCourse/submissions?studentId=${params?.studentId}&lessonAssignmentId=${params?.lessonAssignmentId}`,
+  'studentGrades': (params?: any) => `/api/StudentCourse/grades?studentId=${params?.studentId}&courseId=${params?.courseId}`,
 
   // Group
   'studentsFromGroup': (params?: any) => `/api/Group/students/${params?.groupId}`,
@@ -71,6 +72,7 @@ const API_ENDPOINTS: ApiEndpoints = {
   'removeTeacherFromCourse': (params?: any) => `/api/Course/remove-teacher-from-course?courseId=${params?.courseId}&teacherId=${params?.teacherId}`,
   'courseTeachers': (params?: any) => `/api/Course/course-teachers?courseId=${params?.courseId}`,
   'searchCourses': (params?: any) => `/api/Course/search-courses?search=${params?.search}`,
+  'totalAssignments': (params?: any) => `/api/Course/total-assignments?courseId=${params?.courseId}`,
 
   // Lesson
   'lesson': (params?: any) => `/api/Lesson/lesson?id=${params?.lessonId}`,

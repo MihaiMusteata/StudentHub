@@ -23,6 +23,8 @@ import UserContext from './context/userContext';
 import SearchedCourses from './components/Course/SearchedCourses.tsx';
 import AttendanceList from './components/Course/CourseComponents/AttendanceComponents/AttendanceList.tsx';
 import SubmissionsList from './components/Course/CourseComponents/AssignmentComponents/SubmissionsList.tsx';
+import Grades from './components/Grades/Grades.tsx';
+import CourseGradesInfo from './components/Grades/CourseGradesInfo.tsx';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -135,6 +137,8 @@ function App() {
                             <Route path='/courses/course' element={<CoursePage />} />
                             <Route path='/courses/assignment' element={<Assignment />} />
                             <Route path='/courses/search' element={<SearchedCourses />} />
+                            <Route path='/grades' element={<Grades />} />
+                            <Route path='/grades/course' element={<CourseGradesInfo />} />
                           </>
                         )}
                         <Route path='*' element={<Navigate to='/dashboard' />} />

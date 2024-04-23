@@ -200,6 +200,13 @@ public class CourseController : ControllerBase
     var courses = await _courseService.SearchCourses(search);
     return Ok(courses);
   }
+  
+  [HttpGet("total-assignments")]
+  public async Task<IActionResult> GetTotalAssignments(int courseId)
+  {
+    var totalAssignments = await _courseService.GetTotalAssignments(courseId);
+    return Ok(totalAssignments);
+  }
 
 
 

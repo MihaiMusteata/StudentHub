@@ -442,4 +442,19 @@ public class CourseService : ICourseService
     return courses;
   }
 
+  public async Task<int> GetTotalAssignments(int courseId)
+  {
+    var totalAssignments = await _context.CourseLessons
+      .Where(cl => cl.CourseId == courseId)
+      .Join(
+        _context.LessonAssignments,
+        lesson => lesson.Id,
+        assignment => assignment.CourseLessonId,
+        (lesson, assignment) => assignment
+      )
+      .CountAsync();
+
+    return totalAssignments;
+  }
+
 }
