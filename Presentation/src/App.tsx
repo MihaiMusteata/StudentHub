@@ -27,6 +27,8 @@ import Grades from './components/Grades/Grades.tsx';
 import CourseGradesInfo from './components/Grades/CourseGradesInfo.tsx';
 import ForbiddenPage from './components/ForbiddenPage/ForbiddenPage.tsx';
 import NotFoundPage from './components/NotFound/NotFound.tsx';
+import Chat from './components/Chat/Chat.tsx';
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 export interface toastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -47,6 +49,44 @@ type SetToastComponentFunction = Dispatch<React.SetStateAction<toastProps | unde
 export const ToastContext = createContext<SetToastComponentFunction>(() => { });
 
 function App() {
+  const [ conn, setConn ] = useState<HubConnection>();
+  const [ messages, setMessages ] = useState<string[]>([]);
+  const joinChatRoom = async (username, chatroom) => {
+    try {
+      const connection = new HubConnectionBuilder()
+      .withUrl('https://localhost:7277/chat')
+      .configureLogging(LogLevel.Information)
+      .build();
+
+      connection.on('JoinSpecificChatRoom', (username, msg) => {
+        console.log('JoinSpecificChatRoom: ', msg);
+        // set message username : msg
+        messages.push(`${username}: ${msg}`);
+        setMessages(messages);
+      });
+
+      connection.on('ReceiveSpecificMessage', (username, msg) => {
+        console.log('ReceiveSpecificMessage: ', msg);
+        // set message username : msg
+        messages.push(`${username}: ${msg}`);
+        setMessages(messages);
+      });
+
+      await connection.start();
+      await connection.invoke('JoinSpecificChatRoom', {username, chatroom});
+      setConn(connection);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const sendMessage = async (message) => {
+    try {
+      await conn.invoke('SendMessage', message);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   const [ user, setUser ] = useState<User | undefined>(undefined);
   const [ updateUser, setUpdateUser ] = useState(false);
   const [ isLoading, setIsLoading ] = useState(true);
@@ -163,6 +203,8 @@ function App() {
                 </>
               )}
               <Route path='/test' element={<Test />} />
+              <Route path='/chat' element={<Chat conn={conn} joinChatRoom={joinChatRoom} messages={messages} sendMessage={sendMessage} />} />
+              
             </Routes>
           </UserContext.Provider>
         </ToastContext.Provider>

@@ -1,5 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Api.DataService;
+using Api.Hubs;
 using Application.Identity;
 using Application.Interfaces;
 using Application.Services;
@@ -14,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -120,6 +123,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+builder.Services.AddSingleton<SharedDb>();
 
 var directoryName = configuration.GetValue<string>("UploadsFolder");
 var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), directoryName);
@@ -145,5 +149,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/Chat");
 
 app.Run();

@@ -17,3 +17,4 @@ bld/
 */appsettings.Development.json
 
 Uploads/
+/node_modules
